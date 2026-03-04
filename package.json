@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "url-search-params-polyfill": "^8.2.5",
+    "z-utility": "^1.0.13"
+  }
+}

@@ -1,0 +1,219 @@
+<map id="myMap" scale='{{scale}}' polyline="{{polyline}}" include-points="{{includePoints}}" markers="{{markers}}" longitude="{{longitude}}" latitude="{{latitude}}" show-scale="true" bindmarkertap="handleOnMarkerTap">
+  <view class="time-frame" wx:if="{{g_leaseTime}}">
+    <text>使用时间:</text>
+    <text>{{g_leaseTime.startDate}} 至 {{g_leaseTime.endDate}}</text>
+    <text>无网络时，点右上角「···」刷新，进入紧急页面临时开关锁</text>
+  </view>
+  <view class="container-head">
+    <view class="head-bg" id="-4" bindtap="handleControl">
+      <image src="{{currentSelectControlType=='-4'?'/assets/images/home/wifi_1.png':'/assets/images/home/wifi.png'}}" />
+    </view>
+    <view class="head-bg" id='-5' bindtap="handleControl">
+      <image src="{{currentSelectControlType=='-5'?'/assets/images/home/bluetooth_1.png':'/assets/images/home/bluetooth.png'}}" />
+    </view>
+  </view>
+  <view class="info-upper" wx:if="{{source!='desk'}}">
+    <text bindtap="handleCurrentLocation" wx:if="{{source !='GPSTrajectory'}}">当前位置</text>
+    <!-- <text bindtap="handleTrajectory" wx:if="{{source =='carDetail'&&source !='GPSPosition'}}">历史轨迹</text> -->
+  </view>
+  <view class="info-middle" wx:if="{{source!='desk'}}">
+    <view class="info-middle-layer" bindtap="handleCarStatus">
+      <image src="/assets/images/home/info.png" />
+      <text>车辆状态</text>
+    </view>
+  </view>
+
+  <view class="info-middle-btn">
+    <view class="info-middle-btn-layer" bindtap="handleReturnToVehicle">
+      <image src="/assets/images/home/yd.png" />
+    </view>
+    <view class="info-middle-btn-layer" bindtap="handleStartNavigation">
+      <image src="/assets/images/home/dh.png" />
+    </view>
+  </view>
+  <!-- 公司信息展示 -->
+  <view class="info-middle" style="bottom: 30rpx;right: 40rpx;" wx:if="{{source=='desk'}}">
+    <view class="control_tooltip-photo" wx:if="{{qu_num == 8}}">
+      <text>点击获取帮助查看公司信息</text>
+    </view>
+    <image data-num="8" bindtap="handleQuestionMark" src="/assets/images/q1.png" class="control_question-mark" style="position:absolute;top: -15px;right: -25rpx;" />
+    <view class="info-middle-layer" bindtap="handleCarInfo">
+      <image src="/assets/images/home/info.png" />
+      <text>获得帮助</text>
+    </view>
+  </view>
+  <!-- 公司信息弹出 -->
+  <view class="car-status-info" wx:if="{{infoShowModal}}" bindtap="handleHideShowModal">
+    <view class="car-status-container">
+      <view class="status-info-title">
+        公司信息
+      </view>
+      <view class="status-info-content">
+        <view class="status-info-item">
+          <text>公司名称:{{companyInfo.name||'-'}}</text>
+        </view>
+        <view class="status-info-item">
+          <text>公司地址:{{companyInfo.address||'-'}}</text>
+        </view>
+        <view class="status-info-item">
+          <text>联系电话:{{companyInfo.contactstel||'-'}}</text>
+        </view>
+        <view class="status-info-item">
+          <text>客服联络人:{{companyInfo.linkman||'-'}}</text>
+        </view>
+        <view class="status-info-item">
+          <text>客服电话:{{companyInfo.serviceTel||'-'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  <!-- 车辆状态弹窗 -->
+  <view class="car-status-info" wx:if="{{showModalState}}" bindtap="handleHideShowModal">
+    <view class="car-status-container">
+      <view class="status-info-title">
+        车辆状态
+      </view>
+      <view class="status-info-content">
+        <view class="status-info-item">
+          <text>VIN：{{statusInfo.vin||'-'}}</text>
+        </view>
+        <view class="status-info-item">
+          <text>油量：{{statusInfo.confirmOilRemainA||'-'}}</text>
+          <text>电量：{{statusInfo.electricity||'-'}}</text>
+        </view>
+        <view class="status-info-item">
+          <text>总里程：{{statusInfo.totalMileage||'-'}}</text>
+        </view>
+        <view class="status-info-item">
+          <text>小电瓶：{{statusInfo.voltage||'-'}}</text>
+        </view>
+        <view class="status-info-item">
+          <text>ACC：{{statusInfo.acc}}</text>
+          <text>ON：{{statusInfo.on}}</text>
+        </view>
+        <view class="status-info-item">
+          <text>发动机：{{statusInfo.engineStatus}}</text>
+          <text>档位：{{statusInfo.gears}}</text>
+        </view>
+        <view class="status-info-item">
+          <text>中控锁：{{statusInfo.centralLckingStatus}}</text>
+        </view>
+        <view class="status-info-item">
+          <text>左前门：{{statusInfo.leftFrontDoor||'-'}}</text>
+          <text>右前门：{{statusInfo.rightFrontDoor||'-'}}</text>
+        </view>
+        <view class="status-info-item">
+          <text>左后门：{{statusInfo.leftRearDoor||'-'}}</text>
+          <text>右后门：{{statusInfo.rightRearDoor||'-'}}</text>
+        </view>
+        <view class="status-info-item">
+          <text>脚刹：{{statusInfo.brakeLights}}</text>
+          <text>手刹：{{statusInfo.parkBrake}}</text>
+        </view>
+
+      </view>
+    </view>
+  </view>
+</map>
+<view class="control-panel" style="display: flex;flex-direction: row;align-items: flex-end">
+  <!-- 归还车辆 -->
+  <view class="control_item" wx:if="{{source=='desk'}}">
+    <view class="control_button" id="3" bindtap="handleReturningVehicles">
+      <image src="https://k3a.wiselink.net.cn/img/app/desk/ren_return.png" class="control_button-image" />
+    </view>
+    <text class="control_label">归还车辆</text>
+  </view>
+
+  <view class="control_item">
+    <view class="control_button" id="3" bindtap="handleFooterBtn">
+      <image src="https://k3a.wiselink.net.cn/img/app/desk/ren_unlock.png" class="control_button-image" />
+    </view>
+    <text class="control_label">开锁</text>
+  </view>
+
+  <view class="control_item">
+    <view class="control_button" id="1" bindtap="handleFooterBtn">
+      <image src="https://k3a.wiselink.net.cn/img/app/desk/ren_lock.png" class="control_button-image" />
+    </view>
+    <text class="control_label">关锁</text>
+  </view>
+  <!-- 寻车 -->
+  <view class="control_item">
+    <view class="control_button" id="5" bindtap="handleFooterBtn">
+      <image src="https://k3a.wiselink.net.cn/img/app/desk/ren_lookFor.png" class="control_button-image" />
+    </view>
+    <text class="control_label">寻车</text>
+  </view>
+  <!-- 查看照片 -->
+  <view class="control_item" wx:if="{{source=='desk'}}">
+    <view class="control_button" id="3" bindtap="handleViewPhotos">
+      <image src="https://k3a.wiselink.net.cn/img/app/desk/ren_photo.png" class="control_button-image" />
+    </view>
+    <text class="control_label">查看照片</text>
+  </view>
+  <!-- 风控拦截 -->
+  <view class="control_item" wx:if="{{source!='desk'}}">
+    <view class="control_button" id="8" bindtap="handleFooterBtn">
+      <image src="https://k3a.wiselink.net.cn/img/app/desk/ren_intercept.png" class="control_button-image" />
+    </view>
+    <text class="control_label">风控拦截</text>
+  </view>
+  <!-- 取消拦截 -->
+  <view class="control_item" wx:if="{{source!='desk'}}">
+    <view class="control_button" id="6" bindtap="handleFooterBtn">
+      <image src="https://k3a.wiselink.net.cn/img/app/desk/ren_recovery.png" class="control_button-image" />
+    </view>
+    <text class="control_label">取消拦截</text>
+  </view>
+</view>
+<!-- 选择历史轨迹弹窗 -->
+<block>
+  <view class="modal-mask" wx:if="{{s_trajectory_show}}" bindtap="handleHideTrajectory"></view>
+  <view class="modal-base-map" wx:if="{{s_trajectory_show}}">
+    <form bindsubmit="handleFormSubmit">
+      <view class="modal-container">
+        <view class="modal-container-head">
+          <text>历史轨迹</text>
+          <image src="/assets/images/home/right_1.png" bindtap="handleHideTrajectory" />
+        </view>
+        <view class="modal-container-middle">
+          <view class="middle-form-item">
+            <label>开始时间</label>
+            <view class="modal-form-region">
+              <picker mode="date" data-index="startDate" bindchange="bindTimeChange">
+                <view class="form-item-text">
+                  <text>{{startDate}}</text>
+                </view>
+              </picker>
+              <picker mode="time" data-index="startTime" bindchange="bindTimeChange">
+                <view class="form-item-text">
+                  <text>{{startTime}}</text>
+                </view>
+              </picker>
+            </view>
+
+          </view>
+          <view class="middle-form-item">
+            <label>结束时间</label>
+            <view class="modal-form-region">
+              <picker mode="date" data-index="endDate" bindchange="bindTimeChange">
+                <view class="form-item-text">
+                  <text>{{endDate}}</text>
+                </view>
+              </picker>
+              <picker mode="time" data-index="endTime" bindchange="bindTimeChange">
+                <view class="form-item-text">
+                  <text>{{endTime}}</text>
+                </view>
+              </picker>
+            </view>
+
+          </view>
+        </view>
+        <view class="modal-container-footer">
+          <button formType="submit">确认</button>
+        </view>
+      </view>
+    </form>
+  </view>
+</block>
