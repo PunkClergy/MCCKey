@@ -4,7 +4,7 @@
 		<view class="custom-header"
 			:style="{ paddingTop: height_from_head + 'px', paddingLeft: capsule_distance_to_the_right + 'px', height: head_height + 'px' }">
 			<view class="custom-header-outer-layer">
-				<image class="custom-header-outer-layer-image" src="/static/images/wifi_1.png"></image>
+				<image class="custom-header-outer-layer-image" :src="logoSrc"></image>
 				<view class="custom-header-outer-layer-title" v-if="account">{{account}}</view>
 				<view class="custom-header-outer-layer-user_name" v-if="mobile">
 					<text>{{ mobile }}</text>
@@ -33,6 +33,9 @@
 </template>
 
 <script>
+	import {
+		u_logo
+	} from '@/api';
 	export default {
 		data() {
 			return {
@@ -63,10 +66,18 @@
 				capsule_distance_to_the_right: 0,
 				// 账号信息
 				account: '',
-				mobile: ''
+				mobile: '',
+				// logo
+				c_link: 'https://k1sw.wiselink.net.cn/',
+				logoSrc: '/assets/images/logo.png'
 			}
 		},
 		methods: {
+			// 初始化资源
+			async initLogo() {
+				const res = await u_logo();
+				if (res?.code == 1000) this.logoSrc = `${this.c_link}/img/${res?.content?.img}`;
+			},
 			// 初始化系统头部信息
 			initSystemInfo() {
 				const systemInfo = uni.getSystemInfoSync();
@@ -167,8 +178,9 @@
 			}
 		},
 		onShow() {
-			this.initLoginStatus()
+			this.initLoginStatus();
 			this.initSystemInfo();
+			this.initLogo()
 		}
 	}
 </script>

@@ -85,7 +85,7 @@
 				type: 1,
 				init_qr_code: '',
 				c_link: 'https://k1sw.wiselink.net.cn/',
-				logoSrc: '/assets/images/login/logo.png'
+				logoSrc: '/assets/images/logo.png'
 			};
 		},
 		onLoad(options) {
