@@ -7,7 +7,7 @@
 					<text class="header-title">电子钥匙</text>
 				</view>
 				<view class="header-right" :style="headerRightStyle">
-					<text class="header-icon" >请登录️</text>
+					<text class="header-icon" @click="handleLogin">请登录️</text>
 				</view>
 			</view>
 
@@ -254,7 +254,7 @@
 			},
 			// 获取控车码并设置缓存,然后执行其他地图操作
 			InitSharingCode(evt) {
-				const shareCode = evt?.scene || evt?.query || '';
+				const shareCode = evt?.scene || evt?.query || '1760_A55F97D9C2384D82AFC0D8DC40B86636';
 				if (shareCode) {
 					this.$nextTick(() => {
 						try {
@@ -566,6 +566,11 @@
 						});
 					}
 				});
+			},
+			handleLogin(){
+				uni.redirectTo({
+					url:'/pages/login/index'
+				})
 			},
 			// 地图点击事件
 			mapClick(e) {

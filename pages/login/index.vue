@@ -1,50 +1,64 @@
-<!-- pages/login/login.vue -->
 <template>
-	<!-- index.wxml -->
 	<view class="container">
-		<CustomNavBar title="登录" />
-		<!-- 上部分：登录区域 -->
+		<!-- 登录区域 -->
 		<view class="login-area">
 			<!-- Logo 区域 -->
 			<view class="logo-container fade-in">
 				<view class="logo-wrapper">
-					<image src="/static/public/logo.png" class="logo-img" />
+					<image :src="logoSrc" class="logo-img" mode="aspectFit" />
 					<text class="logo-text">智信通wiselink</text>
 				</view>
 				<text class="slogan">智信通汽车出行技术服务运营提供商</text>
 			</view>
 
 			<!-- 登录方式选择 -->
+			<view class="radio-container">
+				<radio-group class="radio-group" @change="radioChange">
+					<label class="radio-label">
+						<radio value="1" checked color="#4cd964" class="radio-item" />
+						<text class="radio-text">手机号登录</text>
+					</label>
+					<label class="radio-label">
+						<radio value="2" color="#4cd964" class="radio-item" />
+						<text class="radio-text">账号密码登录</text>
+					</label>
+				</radio-group>
+			</view>
 
-
-
-			<view class="input-group">
-				<view class="input-item">
-					<view class="input-label">{{langs.account}}</view>
-					<input class="input-field" :placeholder="langs.pleaseaccount" v-model="username" />
-				</view>
-				<view class="input-item">
-					<view class="input-label">{{langs.password}}</view>
-					<input class="input-field" :placeholder="langs.pleasepassword" v-model="password" :password="true" />
-				</view>
-				<view>
-					<button class="login-btn" @tap="handleLogin">{{langs.loginnow}}</button>
-					<text class="register" @tap="handleRegister">{{langs.signup}}</text>
+			<!-- 账号密码登录表单 -->
+			<view class="form-container" v-if="type==2">
+				<view class="input-group">
+					<view class="input-item">
+						<view class="input-label">账号</view>
+						<input class="input-field" placeholder='请输入账号或手机号' @input='accountInput' />
+					</view>
+					<view class="input-item">
+						<view class="input-label">密码</view>
+						<input class="input-field" placeholder='请输入密码' @input='vericodeInput' password />
+					</view>
+					<view @tap="loginBtnTap">
+						<button class="login-btn">登录</button>
+						<text class="login-tip">账号为登录后设定，无账号请使用微信登录</text>
+					</view>
 				</view>
 			</view>
 
-
+			<!-- 手机号快捷登录 -->
+			<view class="wx-login-container" hover-class="button-hover" v-else>
+				<button class="wx-login-btn" open-type="getPhoneNumber" hover-class="btn_tapcolor"
+					@getphonenumber="onGetPhoneNumber">手机号快捷登录</button>
+			</view>
 		</view>
 
-		<!-- 下部分：信息展示 -->
+		<!-- 信息展示区域 -->
 		<view class="info-area">
 			<view class="info-card">
 				<text class="product-name">智前通wiselink</text>
-				<view style="font-size: 26rpx; color: #575658">商务合作咨询、更多产品了解，请点击、长按官方群二维码，有专属客服服务！</view>
-				<view style="display: flex; justify-content: center">
-					<image :src="init_qr_code" style="width: 300rpx; height: 300rpx" @tap="handlePreviewImage" />
+				<view class="desc-text">不怕丢失，高性价比，可以"魔变"无穷把，可以分享授权使用的手机汽车电子钥匙；</view>
+				<view class="desc-text">请点击、长按添加官方客服，有专属客服服务！</view>
+				<view class="qr-container">
+					<image :src="init_qr_code" class="qr-img" @tap="handlePreviewImage" mode="widthFix" />
 				</view>
-
 				<view class="contact-info">
 					<text class="company-name">智信通·中国北京</text>
 				</view>
@@ -55,130 +69,289 @@
 
 <script>
 	import {
-		login,
-		u_getQrcodeImg
+		u_logo,
+		u_getQrcodeImg,
+		u_wxLogin,
+		u_login
 	} from '@/api';
-	import CustomNavBar from "@/components/custom-header/index.vue";
-	import {
-		langs
-	} from '@/utils/i18n/index.js'
+
 	export default {
+		name: 'LoginPage',
 		data() {
 			return {
-				username: '',
-				password: '',
-				isSubmitting: false,
+				account_value: "",
+				password_value: "",
+				openId: '',
+				type: 1,
 				init_qr_code: '',
-				langs: {},
+				c_link: 'https://k1sw.wiselink.net.cn/',
+				logoSrc: '/assets/images/login/logo.png'
 			};
 		},
-		components: {
-			CustomNavBar
-		},
-		mounted() {
-			this.infinityGetQrcodeImg()
+		onLoad(options) {
+			// 隐私授权检查（微信小程序）
+			uni.requirePrivacyAuthorize({
+				success: () => console.log('用户已同意隐私协议'),
+				fail: (err) => console.log('用户拒绝隐私协议', err)
+			});
+
+			this.openId = options.openId || '';
+			console.log("openID=" + this.openId);
 		},
 		onShow() {
-			this.handleGetCurrentLanguage()
+			this.initLogo();
+			this.initQrCode();
 		},
 		methods: {
-			handleGetCurrentLanguage() {
-				let currentLang = uni.getStorageSync('lang') || 'zh-CN';
-				this.langs = langs[currentLang]
-			},
-			// 预览图片
-			handlePreviewImage(evt) {
-				uni.previewMedia({
-					sources: [{
-						url: this.init_qr_code,
-						// 图片路径
-						type: 'image'
-					}]
+			// 预览二维码图片
+			handlePreviewImage() {
+				uni.previewImage({
+					urls: [this.init_qr_code],
+					current: this.init_qr_code
 				});
 			},
 
-			handlePreviewImage() {
-				if (this.init_qr_code) {
-					uni.previewImage({
-						urls: [this.init_qr_code],
-						longPressActions: {
-							itemList: ['保存图片到相册'],
-							success: (data) => {
-
-							}
-						}
-					});
+			// 手机号快捷登录
+			onGetPhoneNumber(e) {
+				uni.login({
+					success: r => {
+						if (!r.code) return uni.showModal({
+							title: '提示',
+							content: '无法获取登录凭证，请重试',
+							showCancel: false
+						});
+						if (!e.detail?.code) return;
+						u_wxLogin({
+							code: e.detail.code,
+							wxCode: r.code
+						}).then(res => {
+							if (!res?.content) return uni.showModal({
+								title: '提示',
+								content: '用户信息获取失败，请重试',
+								showCancel: false
+							});
+							const u = res.content,
+								app = getApp?.() || getApp({
+									allowDefault: true
+								}),
+								g = app?.globalData;
+							const cfg = {
+								k1swUrl: u.username === '13683187039*' ?
+									'https://k1swtest.wiselink.net.cn/' :
+									'https://k3a.wiselink.net.cn/',
+								fin3Url: 'https://fin3.wiselink.net.cn/fin/'
+							};
+							Promise.all([
+									new Promise((res, rej) => uni.setStorage({
+										key: g.k1swUrlKey,
+										data: cfg.k1swUrl,
+										success: res,
+										fail: rej
+									})),
+									new Promise((res, rej) => uni.setStorage({
+										key: g.fin3UrlKey,
+										data: cfg.fin3Url,
+										success: res,
+										fail: rej
+									})),
+									new Promise((res, rej) => uni.setStorage({
+										key: g.userKey,
+										data: u,
+										success: res,
+										fail: rej
+									}))
+								]).then(() => uni.redirectTo({
+									url: '/pages/index/index'
+								}))
+								.catch(() => uni.showModal({
+									title: '提示',
+									content: '本地数据处理失败，请重新登录！',
+									showCancel: false
+								}));
+						}).catch(() => uni.showModal({
+							title: '提示',
+							content: '操作失败，请检查网络后重试',
+							showCancel: false
+						}));
+					},
+					fail: () => uni.showModal({
+						title: '提示',
+						content: '获取登录凭证失败，请检查网络后重试',
+						showCancel: false
+					})
+				});
+			},
+			// 初始化二维码
+			async initQrCode() {
+				const response = await u_getQrcodeImg();
+				if (response?.code == 1000) {
+					this.logoSrc = `${this.c_link}/img/${response?.content?.img}`;
+					this.init_qr_code = response?.content?.img || '';
 				}
 			},
-			async infinityGetQrcodeImg() {
-				console.log(111)
-				try {
-					const response = await u_getQrcodeImg();
-					if (response?.code == 1000) {
-						this.init_qr_code = response?.content?.img
-					}
 
-				} catch (error) {
-					uni.showToast({
-						title: '查询失败',
-						icon: 'none'
-					});
+			// 初始化logo
+			async initLogo() {
+				const response = await u_logo();
+				if (response?.code == 1000) {
+					this.logoSrc = `${this.c_link}/img/${response?.content?.img}`;
 				}
 			},
-			async handleLogin() {
-				if (!this.username || !this.password) {
+
+			// 账号输入
+			accountInput(e) {
+				this.account_value = e.detail.value;
+			},
+
+			// 密码输入
+			vericodeInput(e) {
+				this.password_value = e.detail.value;
+			},
+
+			// 登录按钮点击
+			loginBtnTap() {
+				if (!this.account_value) {
 					uni.showToast({
-						title: '请输入用户名和密码',
-						icon: 'none'
+						title: '请输入账号',
+						icon: 'none',
+						duration: 2000
 					});
 					return;
 				}
 
-				this.isSubmitting = true;
-
-				try {
-					const response = await login({
-						username: this.username,
-						password: this.password,
-						type: 2
-					});
-
-					uni.setStorageSync('token', response.content.token);
-					uni.setStorageSync('user_info', response.content);
-
-					// 跳转到首页或其他页面
-					uni.reLaunch({
-						url: '/pages/index/index'
-					});
-				} catch (error) {
+				if (!this.password_value) {
 					uni.showToast({
-						title: '登录失败，请检查用户名和密码',
-						icon: 'none'
+						title: '请输入密码',
+						icon: 'none',
+						duration: 2000
 					});
-				} finally {
-					this.isSubmitting = false;
+					return;
 				}
+
+				this.loginPre();
 			},
-			handleRegister(){
-				uni.navigateTo({
-					url:'/pages/register/register'
+
+			// 登录前置处理
+			loginPre() {
+				uni.login({
+					success: (res) => res.code && this.loginRequest(res.code),
+					complete: () => uni.hideLoading()
+				});
+			},
+
+			// 登录请求
+			loginRequest(code) {
+				// 配置URL
+				let k1swUrl = "https://k3a.wiselink.net.cn/";
+				const fin3Url = "https://fin3.wiselink.net.cn/fin/";
+				if (this.account_value == 'dzdemotest') k1swUrl = "https://k1swtest.wiselink.net.cn/";
+
+				const g = getApp?.() || getApp({
+					allowDefault: true
 				})
+				const app = g?.globalData;
+				// 存储URL配置
+				uni.setStorage({
+					key: app.k1swUrlKey,
+					data: k1swUrl,
+					success: () => app.k1swUrl = k1swUrl,
+					fail: () => uni.showModal({
+						title: '提示',
+						content: '本地数据处理失败，请重新登录！',
+						showCancel: false
+					})
+				});
+
+				uni.setStorage({
+					key: app.fin3UrlKey,
+					data: fin3Url,
+					success: () => app.fin3Url = fin3Url,
+					fail: () => uni.showModal({
+						title: '提示',
+						content: '本地数据处理失败，请重新登录！',
+						showCancel: false
+					})
+				});
+
+				// 显示加载中
+				uni.showLoading({
+					title: '正在加载中…',
+					mask: true
+				});
+				u_login({
+					username: this.account_value,
+					password: this.password_value,
+					code: code,
+					type: this.type
+				}).then(res => {
+					console.log(res)
+
+					if (!(res?.code == 1000)) return uni.showModal({
+						title: '提示',
+						content: res?.msg,
+						showCancel: false
+					});
+					const u = res.content,
+						app = getApp?.() || getApp({
+							allowDefault: true
+						}),
+						g = app?.globalData;
+					const cfg = {
+						k1swUrl: u.username === '13683187039*' ?
+							'https://k1swtest.wiselink.net.cn/' : 'https://k3a.wiselink.net.cn/',
+						fin3Url: 'https://fin3.wiselink.net.cn/fin/'
+					};
+					Promise.all([
+							new Promise((res, rej) => uni.setStorage({
+								key: g.k1swUrlKey,
+								data: cfg.k1swUrl,
+								success: res,
+								fail: rej
+							})),
+							new Promise((res, rej) => uni.setStorage({
+								key: g.fin3UrlKey,
+								data: cfg.fin3Url,
+								success: res,
+								fail: rej
+							})),
+							new Promise((res, rej) => uni.setStorage({
+								key: g.userKey,
+								data: u,
+								success: res,
+								fail: rej
+							}))
+						]).then(() => uni.redirectTo({
+							url: '/pages/index/index'
+						}))
+						.catch(() => uni.showModal({
+							title: '提示',
+							content: '本地数据处理失败，请重新登录！',
+							showCancel: false
+						}));
+				})
+
+			},
+
+			// 切换登录方式
+			radioChange(e) {
+				this.type = e.detail.value;
 			}
 		}
 	};
 </script>
 
-<style>
+<style scoped>
 	page {
 		background-color: #252c3b;
 		height: 100%;
 	}
 
-	/* index.wxss */
+	/* 容器样式 */
 	.container {
 		display: flex;
 		flex-direction: column;
 		height: 100vh;
+		background-color: #252c3b;
 	}
 
 	/* 登录区域 */
@@ -261,7 +434,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 40rpx;
-		width: 90%;
 	}
 
 	.input-item {
@@ -282,7 +454,7 @@
 
 	.input-field {
 		margin-left: 10rpx;
-		width: 100%;
+		width: 75%;
 		height: 100%;
 		text-align: left;
 		color: #4a4a4a;
@@ -338,39 +510,20 @@
 		margin-bottom: 20rpx;
 	}
 
-	.product-en {
-		font-size: 24rpx;
+	.desc-text {
+		font-size: 26rpx;
+		color: #575658;
 	}
 
-	.core-title {
-		display: block;
-		font-size: 28rpx;
-		color: #2d3436;
-		font-weight: 600;
-		margin-bottom: 30rpx;
-	}
-
-	.function-list {
+	.qr-container {
 		display: flex;
-		flex-direction: column;
-		gap: 24rpx;
+		justify-content: center;
+		margin: 10rpx 0;
 	}
 
-	.function-item {
-		display: flex;
-		align-items: center;
-		padding: 5rpx 0;
-		font-size: 24rpx;
-		color: #333;
-	}
-
-	.function-item::before {
-		content: '';
-		width: 12rpx;
-		height: 12rpx;
-		background: #4cd964;
-		border-radius: 50%;
-		margin-right: 16rpx;
+	.qr-img {
+		width: 300rpx;
+		height: 300rpx;
 	}
 
 	.contact-info {
@@ -383,11 +536,6 @@
 		display: block;
 		font-size: 24rpx;
 		margin-bottom: 16rpx;
-	}
-
-	.contact-details {
-		font-size: 24rpx;
-		line-height: 1;
 	}
 
 	/* 动画 */
@@ -412,12 +560,5 @@
 
 	.btn_tapcolor {
 		opacity: 0.8;
-	}
-
-	.register {
-		float: right;
-		margin-top: 10rpx;
-		color: #fff;
-		font-size: 26rpx;
 	}
 </style>
