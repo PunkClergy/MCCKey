@@ -7,7 +7,7 @@
 					<text class="header-title">电子钥匙</text>
 				</view>
 				<view class="header-right" :style="headerRightStyle">
-					<text class="header-icon" @click="handleLogin">请登录️</text>
+					<text class="header-icon" @click="handleLogin">{{login_status?'个人中心':'请登录'}}</text>
 				</view>
 			</view>
 
@@ -109,12 +109,12 @@
 				// 当前模式：-4（网络）/-5（蓝牙）
 				currentMode: -4,
 				// 汽车位置地图标记点
-				markers: []
+				markers: [],
+				// 当前登录状态
+				login_status: false
 			};
 		},
 		onLoad(options) {
-			// 设备信息获取
-			this.InitDetermineEquipment()
 			// 控车码
 			this.InitSharingCode(options)
 		},
@@ -122,6 +122,10 @@
 			const scene = uni.getStorageSync('scene');
 			this.shareCode = scene
 			this.handleSearchLink(scene);
+			// 获取登录状态
+			this.initLoginState()
+			// 设备信息获取
+			this.InitDetermineEquipment()
 		},
 		methods: {
 			// WEIXIN
@@ -245,7 +249,7 @@
 			// 判断当前设备参数
 			InitDetermineEquipment() {
 				const deviceInfo = deviceDetector.getDeviceInfo();
-				if (deviceInfo.isMiniProgram&&deviceInfo.isWechatMini) { //小程序环境
+				if (deviceInfo.isMiniProgram && deviceInfo.isWechatMini) { //小程序环境
 					this.initSystemInfo()
 				}
 				if (deviceInfo.isApp && deviceInfo.isAndroid) { //安卓应用
@@ -567,10 +571,31 @@
 					}
 				});
 			},
-			handleLogin(){
-				uni.redirectTo({
-					url:'/pages/login/index'
-				})
+			// 跳转登录页面or个人中心页面
+			handleLogin() {
+				const config = this.login_status ? {
+					method: 'navigateTo',
+					url: '/pages/userCenter/index'
+				} : {
+					method: 'redirectTo',
+					url: '/pages/login/index'
+				};
+
+				uni[config.method]({
+					url: config.url
+				});
+			},
+			// 判断当前页面登录状态
+			initLoginState() {
+				uni.getStorage({
+					key: 'userKey',
+					success: (res) => {
+						this.login_status = !!res.data && typeof res.data === 'object';
+					},
+					fail: () => {
+						this.login_status = false;
+					}
+				});
 			},
 			// 地图点击事件
 			mapClick(e) {

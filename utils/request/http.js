@@ -211,10 +211,11 @@ http.delete = (url, params, config) => http.request({
 http.setInterceptor({
 	request: (config) => {
 		// 添加全局header（例如token）
-		const token = uni.getStorageSync('token')||'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjg4MTcyNDE2ODM3LCJ1c2VyIjoie1wiYWNxdWllc2NlbnRcIjoxLFwiYnR5cGVcIjowLFwiY29tcGFueUlkXCI6ODIyNixcImNvbXBhbnlOYW1lXCI6XCLlkK_oiKrmjK_kuJrnp5_ovablhazlj7hcIixcImZpbjNDb21wYW55SWRcIjo2MDYsXCJpZFwiOjIzMzYsXCJpbnZpdGVDb2RlXCI6XCJCU1E1R1wiLFwibW9iaWxlXCI6XCJxaHdcIixcInBlcnNvbkludml0ZUNvZGVcIjpcIkMyMzM2XCIsXCJyZWFsbmFtZVwiOlwiMTExXCIsXCJ1c2VybmFtZVwiOlwiMTIzNDU2XCIsXCJ4Y3hPcGVuSWRcIjpcIm92WFc4Nngtc0QzZHhDdzd4dzV5YUp6aFI5dE1cIn0iLCJpYXQiOjE3NzI0MTY4Mzd9.vXtEw38xkoz3ryCrNm5Oj_bvSesl9VgAKPnauDzc4ic'
+		const userKey = uni.getStorageSync('userKey')
+		const token = userKey?.token || ''
 		let header = config.header || {}
-		header['funAreaId'] = 1978//暂时写死参数
-		
+		header['funAreaId'] = 1978 //暂时写死参数
+
 		if (token) {
 			header['token'] = token
 		}
