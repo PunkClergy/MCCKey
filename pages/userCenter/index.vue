@@ -5,9 +5,9 @@
 			:style="{ paddingTop: height_from_head + 'px', paddingLeft: capsule_distance_to_the_right + 'px', height: head_height + 'px' }">
 			<view class="custom-header-outer-layer">
 				<image class="custom-header-outer-layer-image" src="/static/images/wifi_1.png"></image>
-				<view class="custom-header-outer-layer-title">My</view>
-				<view class="custom-header-outer-layer-user_name" v-if="account">
-					<text>{{ account }}</text>
+				<view class="custom-header-outer-layer-title" v-if="account">{{account}}</view>
+				<view class="custom-header-outer-layer-user_name" v-if="mobile">
+					<text>{{ mobile }}</text>
 				</view>
 			</view>
 		</view>
@@ -20,11 +20,10 @@
 						:class="index === contentList.length - 1 ? 'my-content-list-item_last' : ''"
 						@tap="handleFunExe(item)">
 						<view class="my-content-list-item__left">
-							<image :src="'https://k1sw.wiselink.net.cn/img/' + item.iconPath"
-								class="my-content-list-item__icon" mode="widthFix" />
+							<image :src="item.icon" class="my-content-list-item__icon" mode="widthFix" />
 							<text class="my-content-list-item__text">{{ item.text }}</text>
 						</view>
-						<image src="/static/images/home/right_1.png" class="my-content-list-item__arrow"
+						<image src="/static/images/right_1.png" class="my-content-list-item__arrow"
 							mode="widthFix" />
 					</view>
 				</view>
@@ -41,14 +40,17 @@
 				tabBarHeight: 80,
 				// 功能列表
 				contentList: [{
+						icon: '/static/images/contact.png',
 						handleEvent: 'ContactUs',
 						text: "联系智信通"
 					},
 					{
+						icon: '/static/images/switch.png',
 						handleEvent: 'SwitchAccount',
 						text: "切换账号"
 					},
 					{
+						icon: '/static/images/out.png',
 						handleEvent: 'SignOut',
 						text: "退出登录"
 					}
@@ -60,7 +62,8 @@
 				head_height: 0,
 				capsule_distance_to_the_right: 0,
 				// 账号信息
-				account: ''
+				account: '',
+				mobile: ''
 			}
 		},
 		methods: {
@@ -153,7 +156,9 @@
 				uni.getStorage({
 					key: 'userKey',
 					success: res => {
-						this.account = res?.data?.companyName || res?.data?.username;
+						this.account = res?.data?.companyName || res?.data?.username || res?.data?.mobile ||
+							'';
+						this.mobile = res?.data?.mobile || '';
 					},
 					fail(err) {
 						console.error("获取失败", err);
