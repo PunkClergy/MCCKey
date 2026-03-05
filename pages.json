@@ -21,6 +21,14 @@
 				"navigationBarBackgroundColor": "#252C3B",
 				"navigationBarTextStyle": "white"
 			}
+		}, {
+			"path": "pages/returnPhotos/index",
+			"style": {
+				"navigationStyle": "default",
+				"navigationBarTitleText": "归还车辆",
+				"navigationBarBackgroundColor": "#252C3B",
+				"navigationBarTextStyle": "white"
+			}
 		}
 	],
 	"globalStyle": {

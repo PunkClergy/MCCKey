@@ -64,7 +64,7 @@
 						mode="widthFix"></image>
 					<text class="btn-text">寻车</text>
 				</view>
-				<view class="control-btn" @click="clearMarkers">
+				<view class="control-btn" @click="handleReturningVehicles">
 					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_return.png"
 						mode="widthFix"></image>
 					<text class="btn-text">还车</text>
@@ -531,6 +531,17 @@
 				} finally {
 					//  统一清理 (如果需要)
 				}
+			},
+			// 归还车辆
+			handleReturningVehicles() {
+				console.log(this)
+				if (!this.shareCode) {
+					showToast('无可用车辆')
+					return
+				}
+				uni.navigateTo({
+					url: `/pages/returnPhotos/index?code=${this.shareCode}`
+				})
 			},
 			// 定位到当前位置
 			centerLocation() {
