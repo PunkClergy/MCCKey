@@ -83,17 +83,12 @@
                 },
                 "geolocation" : {
                     "tencent" : {
-                        "__platform__" : [ "android" ],
-                        "apikey_ios" : "",
+                        "__platform__" : [ "ios", "android" ],
+                        "apikey_ios" : "W66BZ-ADBC3-COB3F-YWZG4-MAVRO-IJBIM",
                         "apikey_android" : "W66BZ-ADBC3-COB3F-YWZG4-MAVRO-IJBIM"
                     }
                 },
-                "share" : {
-                    "weixin" : {
-                        "appid" : "wxba6c63453f7bdd31",
-                        "UniversalLinks" : ""
-                    }
-                },
+                "share" : {},
                 "oauth" : {}
             },
             "icons" : {
