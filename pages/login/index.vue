@@ -11,7 +11,7 @@
 			</view>
 
 			<!-- 登录方式选择 -->
-			<view class="radio-container">
+			<view class="radio-container" v-if="hardware">
 				<radio-group class="radio-group" @change="radioChange">
 					<label class="radio-label">
 						<radio value="1" checked color="#4cd964" class="radio-item" />
@@ -36,7 +36,7 @@
 						<input class="input-field" placeholder='请输入密码' @input='e=>password_value=e.detail.value'
 							password />
 					</view>
-					<view @tap="loginBtnTap">
+					<view @tap="handleAccountLogin">
 						<button class="login-btn">登录</button>
 						<text class="login-tip">账号为登录后设定，无账号请使用微信登录</text>
 					</view>
@@ -46,7 +46,7 @@
 			<!-- 手机号快捷登录 -->
 			<view class="wx-login-container" hover-class="button-hover" v-else>
 				<button class="wx-login-btn" open-type="getPhoneNumber" hover-class="btn_tapcolor"
-					@getphonenumber="onGetPhoneNumber">手机号快捷登录</button>
+					@getphonenumber="handlePhoneQuickLogin">手机号快捷登录</button>
 			</view>
 		</view>
 
@@ -69,6 +69,9 @@
 
 <script>
 	import {
+		deviceDetector
+	} from '@/utils/ToolClass.js';
+	import {
 		u_logo,
 		u_getQrcodeImg,
 		u_wxLogin,
@@ -85,7 +88,8 @@
 				type: 1,
 				init_qr_code: '',
 				c_link: 'https://k1sw.wiselink.net.cn/',
-				logoSrc: '/assets/images/logo.png'
+				logoSrc: '/assets/images/logo.png',
+				hardware: true, //是否为小程序
 			};
 		},
 		onLoad(options) {
@@ -99,8 +103,21 @@
 		onShow() {
 			this.initLogo();
 			this.initQrCode();
+			this.InitDetermineEquipment()
 		},
 		methods: {
+			/************************ 基础通用方法 ************************/
+			// 判断当前设备参数
+			InitDetermineEquipment() {
+				const deviceInfo = deviceDetector.getDeviceInfo();
+
+				if (!(deviceInfo.isMiniProgram && deviceInfo.isWechatMini)) { //小程序环境
+
+					this.type = 2,
+						this.hardware = false
+				}
+			},
+
 			// 预览二维码
 			handlePreviewImage() {
 				uni.previewImage({
@@ -114,6 +131,7 @@
 				const res = await u_logo();
 				if (res?.code == 1000) this.logoSrc = `${this.c_link}/img/${res?.content?.img}`;
 			},
+
 			// 初始化请求二维码
 			async initQrCode() {
 				const res = await u_getQrcodeImg();
@@ -123,61 +141,86 @@
 				}
 			},
 
-			// 手机号快捷登录
-			onGetPhoneNumber(e) {
+			// 切换登录方式
+			radioChange(e) {
+				this.type = e.detail.value;
+			},
+
+			/************************ 手机号快捷登录（独立模块） ************************/
+			// 手机号快捷登录入口
+			handlePhoneQuickLogin(e) {
+				// 先获取微信登录凭证
 				uni.login({
-					success: r => {
-						if (!r.code) return uni.showModal({
-							title: '提示',
-							content: '无法获取登录凭证，请重试',
-							showCancel: false
-						});
-						if (!e.detail?.code) return;
-						u_wxLogin({
-							code: e.detail.code,
-							wxCode: r.code
-						}).then(res => {
-							if (!res?.content) return uni.showModal({
-								title: '提示',
-								content: '用户信息获取失败，请重试',
-								showCancel: false
-							});
-							this.handleLoginSuccess(res.content);
-						}).catch(() => uni.showModal({
-							title: '提示',
-							content: '操作失败，请检查网络后重试',
-							showCancel: false
-						}));
-					},
-					fail: () => uni.showModal({
-						title: '提示',
-						content: '获取登录凭证失败，请检查网络后重试',
-						showCancel: false
-					})
+					success: (loginRes) => this.handlePhoneLoginSuccess(loginRes, e),
+					fail: () => this.showLoginError('获取登录凭证失败，请检查网络后重试')
 				});
 			},
 
-			// 账号密码登录
-			loginBtnTap() {
-				if (!this.account_value) return uni.showToast({
-					title: '请输入账号',
-					icon: 'none',
-					duration: 2000
-				});
-				if (!this.password_value) return uni.showToast({
-					title: '请输入密码',
-					icon: 'none',
-					duration: 2000
-				});
-				this.loginPre();
+			// 手机号登录-获取凭证成功处理
+			handlePhoneLoginSuccess(loginRes, phoneEvt) {
+				// 检查登录凭证
+				if (!loginRes.code) {
+					return this.showLoginError('无法获取登录凭证，请重试');
+				}
+
+				// 检查手机号授权码
+				if (!phoneEvt.detail?.code) {
+					return this.showLoginError('请授权手机号后再登录');
+				}
+
+				// 调用手机号登录接口
+				this.requestPhoneLogin(loginRes.code, phoneEvt.detail.code);
 			},
-			loginPre() {
-				uni.login({
-					success: (res) => res.code && this.loginRequest(res.code),
-					complete: () => uni.hideLoading()
+
+			// 手机号登录-接口请求
+			requestPhoneLogin(wxCode, phoneCode) {
+				u_wxLogin({
+					code: phoneCode,
+					wxCode: wxCode
+				}).then(res => {
+					if (!res?.content) {
+						return this.showLoginError('用户信息获取失败，请重试');
+					}
+					this.handleLoginSuccess(res.content);
+				}).catch(() => {
+					this.showLoginError('操作失败，请检查网络后重试');
 				});
 			},
-			loginRequest(code) {
+
+			/************************ 账号密码登录（独立模块） ************************/
+			// 账号密码登录入口
+			handleAccountLogin() {
+				// 表单验证
+				if (!this.validateAccountForm()) return;
+
+				this.prepareAccountLogin()
+			},
+
+			// 账号密码登录-表单验证
+			validateAccountForm() {
+				if (!this.account_value) {
+					uni.showToast({
+						title: '请输入账号',
+						icon: 'none',
+						duration: 2000
+					});
+					return false;
+				}
+
+				if (!this.password_value) {
+					uni.showToast({
+						title: '请输入密码',
+						icon: 'none',
+						duration: 2000
+					});
+					return false;
+				}
+
+				return true;
+			},
+
+			// 账号密码登录-准备登录（存储URL配置）
+			prepareAccountLogin() {
 				// 基础URL配置
 				const k1swUrl = this.account_value == 'dzdemotest' ? 'https://k1swtest.wiselink.net.cn/' :
 					'https://k3a.wiselink.net.cn/';
@@ -188,38 +231,60 @@
 				const g = app?.globalData;
 
 				// 存储基础URL
+				this.saveBaseUrlConfig(g, k1swUrl, fin3Url);
+
+				// 发起登录请求
+				this.requestAccountLogin();
+			},
+
+			// 账号密码登录-存储基础URL配置
+			saveBaseUrlConfig(globalData, k1swUrl, fin3Url) {
 				['k1swUrlKey', 'fin3UrlKey'].forEach((key, i) => {
 					uni.setStorage({
-						key: g[key],
+						key: globalData[key],
 						data: [k1swUrl, fin3Url][i],
-						success: () => g[[key.replace('Key', ''), key.replace('Key', '')][i]] = [k1swUrl,
-							fin3Url
-						][i],
-						fail: () => uni.showModal({
-							title: '提示',
-							content: '本地数据处理失败，请重新登录！',
-							showCancel: false
-						})
+						success: () => {
+							globalData[[key.replace('Key', ''), key.replace('Key', '')][i]] = [k1swUrl,
+								fin3Url
+							][i];
+						},
+						fail: () => {
+							this.showLoginError('本地数据处理失败，请重新登录！');
+						}
 					});
 				});
+			},
 
-				// 登录请求
+			// 账号密码登录-接口请求
+			requestAccountLogin() {
 				uni.showLoading({
 					title: '正在加载中…',
 					mask: true
 				});
+
 				u_login({
 					username: this.account_value,
 					password: this.password_value,
-					code: code,
 					type: this.type
 				}).then(res => {
-					if (!(res?.code == 1000)) return uni.showModal({
-						title: '提示',
-						content: res?.msg,
-						showCancel: false
-					});
+					uni.hideLoading();
+					if (!(res?.code == 1000)) {
+						return this.showLoginError(res?.msg || '登录失败，请重试');
+					}
 					this.handleLoginSuccess(res.content);
+				}).catch(() => {
+					uni.hideLoading();
+					this.showLoginError('登录请求失败，请检查网络');
+				});
+			},
+
+			/************************ 通用辅助方法 ************************/
+			// 显示登录错误提示
+			showLoginError(message) {
+				uni.showModal({
+					title: '提示',
+					content: message,
+					showCancel: false
 				});
 			},
 
@@ -255,19 +320,14 @@
 							success: res,
 							fail: rej
 						}))
-					]).then(() => uni.redirectTo({
-						url: '/pages/index/index'
-					}))
-					.catch(() => uni.showModal({
-						title: '提示',
-						content: '本地数据处理失败，请重新登录！',
-						showCancel: false
-					}));
-			},
-
-			// 切换登录方式
-			radioChange(e) {
-				this.type = e.detail.value;
+					]).then(() => {
+						uni.redirectTo({
+							url: '/pages/index/index'
+						});
+					})
+					.catch(() => {
+						this.showLoginError('本地数据处理失败，请重新登录！');
+					});
 			}
 		}
 	};
