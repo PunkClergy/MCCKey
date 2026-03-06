@@ -69,7 +69,7 @@
 						mode="widthFix"></image>
 					<text class="btn-text">还车</text>
 				</view>
-				<view class="control-btn" @click="routePlan">
+				<view class="control-btn" @click="handleViewPhotos">
 					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_photo.png" mode="widthFix">
 					</image>
 					<text class="btn-text">查看</text>
@@ -111,7 +111,8 @@
 				// 汽车位置地图标记点
 				markers: [],
 				// 当前登录状态
-				login_status: false
+				login_status: false,
+				c_fin3_link: 'https://fin3.wiselink.net.cn/fin/',
 			};
 		},
 		onLoad(options) {
@@ -280,6 +281,13 @@
 						...i,
 						latitude: i.latitude,
 						longitude: i.longitude,
+						g_images: [
+							i?.uploadImgUrl,
+							i?.uploadImgUrlFive,
+							i?.uploadImgUrlFour,
+							i?.uploadImgUrlThree,
+							i?.uploadImgUrlTwo
+						],
 						markers: [{
 							id: 1,
 							latitude: i.latitude,
@@ -542,6 +550,40 @@
 				uni.navigateTo({
 					url: `/pages/returnPhotos/index?code=${this.shareCode}`
 				})
+			},
+			// 查看照片
+			handleViewPhotos() {
+				// 校验车辆编号是否存在
+				console.log(this)
+				if (!this.shareCode) {
+					// Uniapp 统一的提示框API
+					uni.showToast({
+						title: '无可用车辆',
+						icon: 'none', // 小程序默认是success，这里显式指定none更符合原逻辑
+						duration: 2000
+					});
+					return
+				}
+
+				// 处理图片链接，拼接完整URL并替换路径分隔符
+				const images = this.g_images.map(ele => {
+					let temp = this.c_fin3_link + ele.replace(/\\/g, "/")
+					console.log(temp)
+					return temp
+				})
+
+				// Uniapp 统一的图片预览API
+				uni.previewImage({
+					urls: images, // 需要预览的图片http链接列表
+					// 可选：添加失败回调，增强代码健壮性
+					fail: (err) => {
+						console.error('图片预览失败：', err)
+						uni.showToast({
+							title: '图片预览失败',
+							icon: 'none'
+						})
+					}
+				});
 			},
 			// 定位到当前位置
 			centerLocation() {

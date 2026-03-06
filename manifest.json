@@ -26,7 +26,8 @@
             "FaceID" : {},
             "FacialRecognitionVerify" : {},
             "Fingerprint" : {},
-            "Share" : {}
+            "Share" : {},
+            "OAuth" : {}
         },
         /* 模块配置 */
         "distribute" : {
@@ -92,7 +93,8 @@
                         "appid" : "wxba6c63453f7bdd31",
                         "UniversalLinks" : ""
                     }
-                }
+                },
+                "oauth" : {}
             },
             "icons" : {
                 "ios" : {
