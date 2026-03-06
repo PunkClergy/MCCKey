@@ -1,10 +1,10 @@
 {
-    "name" : "ZxtWiselink",
+    "name" : "智钥通",
     "appid" : "__UNI__0192300",
     "description" : "",
-    "versionName" : "1.0.6",
+    "versionName" : "1.1.1",
     "package" : "com2.example.myapp",
-    "versionCode" : 102,
+    "versionCode" : 111,
     "transformPx" : false,
     "app-plus" : {
         /* 5+App特有相关 */
@@ -162,7 +162,8 @@
                 }
             }
         }
-    }
+    },
+    "locale" : "auto"
 }
 /* android打包配置 *//* ios打包配置 */
 
