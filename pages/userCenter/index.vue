@@ -23,8 +23,7 @@
 							<image :src="item.icon" class="my-content-list-item__icon" mode="widthFix" />
 							<text class="my-content-list-item__text">{{ item.text }}</text>
 						</view>
-						<image src="/static/images/right_1.png" class="my-content-list-item__arrow"
-							mode="widthFix" />
+						<image src="/static/images/right_1.png" class="my-content-list-item__arrow" mode="widthFix" />
 					</view>
 				</view>
 			</view>
@@ -81,19 +80,50 @@
 			// 初始化系统头部信息
 			initSystemInfo() {
 				const systemInfo = uni.getSystemInfoSync();
-				const menuButtonRect = uni.getMenuButtonBoundingClientRect?.();
-				if (!menuButtonRect) return;
-
 				const {
 					statusBarHeight,
-					screenWidth
+					screenWidth,
+					platform
 				} = systemInfo;
-				const menuHeight = menuButtonRect.height + (menuButtonRect.top - statusBarHeight) * 2;
-				const capsuleRight = screenWidth - menuButtonRect.right;
 
-				this.height_from_head = statusBarHeight;
-				this.head_height = statusBarHeight + menuHeight;
-				this.capsule_distance_to_the_right = capsuleRight;
+				this.height_from_head = statusBarHeight || 0;
+				this.head_height = 0;
+				this.capsule_distance_to_the_right = 0;
+				const isMiniProgram = systemInfo.miniProgram || (platform === 'devtools' && uni
+					.getMenuButtonBoundingClientRect);
+				const isApp = platform === 'ios' || platform === 'android' && !isMiniProgram;
+
+				if (isMiniProgram) {
+
+					const menuButtonRect = uni.getMenuButtonBoundingClientRect?.() || {};
+
+
+					if (menuButtonRect.width && menuButtonRect.height && menuButtonRect.top) {
+						const menuHeight = menuButtonRect.height + (menuButtonRect.top - statusBarHeight) * 2;
+						const capsuleRight = screenWidth - (menuButtonRect.right || screenWidth);
+
+						this.head_height = statusBarHeight + menuHeight;
+						this.capsule_distance_to_the_right = capsuleRight;
+					} else {
+
+						this.head_height = statusBarHeight + 44;
+						this.capsule_distance_to_the_right = 10;
+					}
+				}
+
+				// ========== App逻辑 ==========
+				if (isApp) {
+					// App端自定义导航栏逻辑（可根据需求调整）
+					// 示例：App端导航栏高度固定为44px（可根据iOS/Android区分）
+					const appNavBarHeight = platform === 'ios' ? 44 : 48; // iOS/Android差异化
+					this.head_height = statusBarHeight + appNavBarHeight;
+					this.capsule_distance_to_the_right = 15; // App端默认右侧间距
+
+					// 可选：App端可添加更多自定义逻辑，比如适配刘海屏
+					if (systemInfo.safeArea && systemInfo.safeArea.top > statusBarHeight) {
+						this.height_from_head = systemInfo.safeArea.top; // 适配刘海屏状态栏高度
+					}
+				}
 			},
 			// 拨打客服电话
 			makePhoneCall(phoneNumber) {

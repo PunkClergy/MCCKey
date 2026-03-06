@@ -136,7 +136,6 @@
 			async initQrCode() {
 				const res = await u_getQrcodeImg();
 				if (res?.code == 1000) {
-					this.logoSrc = `${this.c_link}/img/${res?.content?.img}`;
 					this.init_qr_code = res?.content?.img || '';
 				}
 			},
