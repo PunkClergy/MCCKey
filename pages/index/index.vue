@@ -87,7 +87,8 @@
 	import {
 		u_getCarPoisitonByCode,
 		u_verifyControlcode,
-		u_operation
+		u_operation,
+		u_logo
 	} from '@/api';
 	export default {
 		name: "MapPage",
@@ -120,9 +121,7 @@
 			this.InitSharingCode(options)
 		},
 		onShow() {
-			const scene = uni.getStorageSync('scene');
-			this.shareCode = scene
-			this.handleSearchLink(scene);
+
 			// 获取登录状态
 			this.initLoginState()
 			// 设备信息获取
@@ -258,16 +257,49 @@
 				}
 			},
 			// 获取控车码并设置缓存,然后执行其他地图操作
-			InitSharingCode(evt) {
-				const shareCode = evt?.scene || evt?.query || '1760_A55F97D9C2384D82AFC0D8DC40B86636';
+			 // 初始化分享码（处理扫码/链接跳转/缓存的分享码）
+			
+			async InitSharingCode(evt) {
+				console.log(evt,'22222')
+				const {
+					scene: shareCodeFromScene,
+					query: shareCodeFromQuery
+				} = evt || {};
+				const shareCode = shareCodeFromScene || shareCodeFromQuery;
+				const userStorage = uni.getStorageSync('userKey') || {};
+				const token = userStorage.token || '';
+				let finalShareCode = '';
+
+				// 1. 优先级1：从跳转参数获取分享码（最高优先级）
 				if (shareCode) {
-					this.$nextTick(() => {
-						try {
-							this.handleSearchLink(shareCode)
-							this.shareCode = shareCode
-							uni.setStorageSync('scene', shareCode)
-						} catch (e) {}
-					});
+					console.log(shareCode,'222233')
+					finalShareCode = shareCode;
+				}
+				// 2. 优先级2：已登录则从接口获取分享码
+				else if (token) {
+					try {
+						const res = await u_logo();
+						if (res?.code === 1000 && res?.content?.scene) {
+							finalShareCode = res.content.scene;
+						}
+					} catch (error) {
+						console.error('获取登录态分享码失败：', error);
+					}
+				}
+				// 3. 优先级3：从缓存获取分享码（最低优先级）
+				else {
+					finalShareCode = uni.getStorageSync('scene') || '';
+				}
+				console.log(finalShareCode)
+				// 4. 有有效分享码时统一处理（避免重复代码）
+				if (finalShareCode) {
+					try {
+						this.shareCode = finalShareCode;
+						this.handleSearchLink(finalShareCode);
+						uni.setStorageSync('scene', finalShareCode);
+					} catch (error) {
+						console.error('处理分享码失败：', error);
+					}
 				}
 			},
 			// 获取车辆位置
