@@ -10,7 +10,6 @@
 					<text class="header-icon" @click="handleLogin">{{login_status?'个人中心':'请登录'}}</text>
 				</view>
 			</view>
-
 		</view>
 
 		<!-- 地图主体区域 -->
@@ -28,6 +27,13 @@
 							:src="currentMode === -5 ? '/static/images/bluetooth_1.png' : '/static/images/bluetooth.png'"
 							mode="widthFix"></image>
 					</view>
+				</view>
+			</view>
+
+			<!-- 右上角：联系我们电话图标 -->
+			<view class="top-right-controls">
+				<view class="contact-btn" @click="makePhoneCall">
+					<image class="contact-img" src="/static/images/after_sales.png" mode="widthFix"></image>
 				</view>
 			</view>
 
@@ -114,6 +120,8 @@
 				// 当前登录状态
 				login_status: false,
 				c_fin3_link: 'https://fin3.wiselink.net.cn/fin/',
+				// 联系电话（可根据实际需求修改）
+				contactPhone: '400-123-4567'
 			};
 		},
 		onLoad(options) {
@@ -121,13 +129,40 @@
 			this.InitSharingCode(options)
 		},
 		onShow() {
-
 			// 获取登录状态
 			this.initLoginState()
 			// 设备信息获取
 			this.InitDetermineEquipment()
 		},
 		methods: {
+			// 拨打电话方法
+			makePhoneCall() { 
+				if (!this.rentCompany?.contactstel) {
+					uni.showToast({
+						title: '暂无联系电话',
+						icon: 'none',
+						duration: 2000
+					});
+					return;
+				}
+
+				// 调用uniapp拨打电话API
+				uni.makePhoneCall({
+					phoneNumber: this.rentCompany?.contactstel,
+					success: () => {
+						console.log('拨打电话成功');
+					},
+					fail: (err) => {
+						console.error('拨打电话失败：', err);
+						uni.showToast({
+							title: '拨打电话失败，请手动拨打',
+							icon: 'none',
+							duration: 2000
+						});
+					}
+				});
+			},
+
 			// WEIXIN
 			initSystemInfo() {
 				const systemInfo = uni.getSystemInfoSync();
@@ -158,9 +193,7 @@
 					})
 				};
 
-
 				Object.assign(this, systemInfoObj);
-
 
 				const {
 					capsule_height,
@@ -170,7 +203,6 @@
 				} = this;
 				const capsuleBaseHeight = capsule_height + capsule_top + 10;
 				const capsuleBaseWidth = capsule_left - (capsule_distance_to_the_right * 2);
-
 
 				this.headerStyle = {
 					height: `${Math.max(capsuleBaseHeight, 44)}px`,
@@ -256,11 +288,8 @@
 					this.initSystemAndroid()
 				}
 			},
-			// 获取控车码并设置缓存,然后执行其他地图操作
-			 // 初始化分享码（处理扫码/链接跳转/缓存的分享码）
-			
+			// 获取控车码并设置缓存,然后执行其他地图操作			
 			async InitSharingCode(evt) {
-				console.log(evt,'22222')
 				const {
 					scene: shareCodeFromScene,
 					query: shareCodeFromQuery
@@ -272,20 +301,20 @@
 
 				// 1. 优先级1：从跳转参数获取分享码（最高优先级）
 				if (shareCode) {
-					console.log(shareCode,'222233')
+					console.log(shareCode, '222233')
 					finalShareCode = shareCode;
 				}
 				// 2. 优先级2：已登录则从接口获取分享码
-				else if (token) {
-					try {
-						const res = await u_logo();
-						if (res?.code === 1000 && res?.content?.scene) {
-							finalShareCode = res.content.scene;
-						}
-					} catch (error) {
-						console.error('获取登录态分享码失败：', error);
-					}
-				}
+				// else if (token) {
+				// 	try {
+				// 		const res = await u_logo();
+				// 		if (res?.code === 1000 && res?.content?.scene) {
+				// 			finalShareCode = res.content.scene;
+				// 		}
+				// 	} catch (error) {
+				// 		console.error('获取登录态分享码失败：', error);
+				// 	}
+				// }
 				// 3. 优先级3：从缓存获取分享码（最低优先级）
 				else {
 					finalShareCode = uni.getStorageSync('scene') || '';
@@ -483,17 +512,14 @@
 						});
 					},
 					[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_ERROR]: () => {
-
 						uni.hideLoading();
 					},
 					[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_ADAPTER_UNAVAILABLE]: () => {
-
 						uni.showToast({
 							title: '请打开蓝牙',
 							icon: 'none'
 						});
 						uni.hideLoading();
-
 					},
 					[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_NOT_FOUND]: () => {
 						uni.hideLoading();
@@ -762,6 +788,37 @@
 		z-index: 999;
 	}
 
+	/* 右上角联系我们电话图标 */
+	.top-right-controls {
+		position: absolute;
+		top: 16px;
+		right: 16px;
+		z-index: 999;
+	}
+
+	.contact-btn {
+		width: 50px;
+		height: 50px;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.95);
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.contact-btn:active {
+		transform: scale(0.95);
+		opacity: 0.9;
+	}
+
+	.contact-img {
+		width: 24px;
+		height: 24px;
+	}
+
 	.control-card {
 		background: rgba(255, 255, 255, 0.92);
 		border-radius: 12px;
@@ -902,6 +959,7 @@
 			background: #1e40af;
 		}
 
+		.contact-btn,
 		.float-btn {
 			background: rgba(30, 30, 30, 0.95);
 		}
