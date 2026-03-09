@@ -40,17 +40,17 @@
 
 			<!-- 右下角：导航+回到当前位置悬浮图标 -->
 			<view class="bottom-right-controls">
-				<view class="float-btn" @click="centerLocation">
+				<view class="float-btn" @click="handleCenterLocation">
 					<image class="float-img" src="/static/images/location.png" mode="widthFix"></image>
 				</view>
-				<view class="float-btn" @click="routePlan">
+				<view class="float-btn" @click="handleRoutePlan">
 					<image class="float-img" src="/static/images/route.png" mode="widthFix"></image>
 				</view>
 			</view>
 
 			<!-- 核心地图组件 -->
-			<map class="map" :latitude="latitude" :longitude="longitude" :scale="mapScale" show-location @tap="mapClick"
-				:markers="markers"></map>
+			<map class="map" :latitude="latitude" :longitude="longitude" :scale="mapScale" show-location @tap="handleMapClick"
+				:markers="markers" @regionchange="handleOnMapRegionChange"></map>
 		</view>
 
 		<!-- 底部控制栏（5个按钮） -->
@@ -171,7 +171,6 @@
 					}
 				});
 			},
-
 			// WEIXIN
 			initSystemInfo() {
 				const systemInfo = uni.getSystemInfoSync();
@@ -435,6 +434,15 @@
 			},
 			// 开锁、关锁、寻车核心逻辑（精简版）
 			handleFooterBtn(evt) {
+				if (!this.shareCode) {
+					// Uniapp 统一的提示框API
+					uni.showToast({
+						title: '无可用车辆',
+						icon: 'none', // 小程序默认是success，这里显式指定none更符合原逻辑
+						duration: 2000
+					});
+					return
+				}
 				// 增加标识，记录loading是否成功显示
 				let loadingShowed = false;
 				const safeLoading = {
@@ -643,7 +651,11 @@
 			handleReturningVehicles() {
 				console.log(this)
 				if (!this.shareCode) {
-					showToast('无可用车辆')
+					uni.showToast({
+						title: '无可用车辆',
+						icon: 'none',
+						duration: 2000
+					});
 					return
 				}
 				uni.navigateTo({
@@ -684,45 +696,72 @@
 					}
 				});
 			},
+			// 滑动地图实施改变中心位置
+			handleOnMapRegionChange(evt) {
+				const {
+					latitude = this.latitude, longitude = this.longitude
+				} = evt?.detail?.centerLocation || {};
+				if (latitude && longitude && (latitude !== this.latitude || longitude !== this.longitude)) {
+					this.latitude = latitude;
+					this.longitude = longitude;
+				}
+			},
 			// 定位到当前位置
-			centerLocation() {
-				uni.getLocation({
-					type: 'gcj02', // 国测局坐标系，适配map组件
-					success: (res) => {
-						this.latitude = res.latitude;
-						this.longitude = res.longitude;
-
-						uni.showToast({
-							title: '已定位到当前位置',
-							icon: 'none'
-						});
-					},
-					fail: (err) => {
-						uni.showToast({
-							title: '定位失败：' + err.errMsg,
-							icon: 'none'
-						});
-					}
+			handleCenterLocation() {
+				return new Promise((resolve, reject) => {
+					uni.getLocation({
+						type: 'gcj02',
+						success: (res) => {
+							this.latitude = res.latitude;
+							this.longitude = res.longitude;
+							uni.showToast({
+								title: '已定位到当前位置',
+								icon: 'none'
+							});
+							resolve(res);
+						},
+						fail: (err) => {
+							const errMsg = '定位失败：' + err.errMsg;
+							uni.showToast({
+								title: errMsg,
+								icon: 'none'
+							});
+							reject(new Error(errMsg));
+						}
+					});
 				});
 			},
-			// 导航规划
-			routePlan() {
-				console.log(this)
-				const latitude = Number(this.current_latitude);
-				const longitude = Number(this.current_longitude);
-				uni.openLocation({
-					latitude,
-					longitude,
-					scale: 18,
-					fail: (err) => {
-						console.error('打开位置失败', err);
-						uni.showToast({
-							title: '导航失败，请检查定位权限',
-							icon: 'none',
-							duration: 3000
-						});
-					}
-				});
+			// 导航到车辆位置-打开外部地图
+			async handleRoutePlan() {
+				if (!this.shareCode) {
+					uni.showToast({
+						title: '无可用车辆',
+						icon: 'none',
+						duration: 2000
+					});
+					return;
+				}
+
+				try {
+					await this.handleCenterLocation();
+					const latitude = Number(this.current_latitude);
+					const longitude = Number(this.current_longitude);
+					uni.openLocation({
+						latitude,
+						longitude,
+						scale: 18,
+						fail: (err) => {
+							console.error('打开位置失败', err);
+							uni.showToast({
+								title: '导航失败，请检查定位权限',
+								icon: 'none',
+								duration: 3000
+							});
+						}
+					});
+				} catch (error) {
+					console.error('定位异常', error);
+				}
 			},
 			// 跳转登录页面or个人中心页面
 			handleLogin() {
@@ -751,7 +790,7 @@
 				});
 			},
 			// 地图点击事件
-			mapClick(e) {
+			handleMapClick(e) {
 				console.log('地图点击坐标：', e.detail.longitude, e.detail.latitude);
 			}
 		}
