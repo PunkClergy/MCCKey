@@ -34,6 +34,7 @@
 			<view class="top-right-controls">
 				<view class="contact-btn" @click="makePhoneCall">
 					<image class="contact-img" src="/static/images/after_sales.png" mode="widthFix"></image>
+					<text class="contact-text">咨询</text>
 				</view>
 			</view>
 
@@ -136,7 +137,7 @@
 		},
 		methods: {
 			// 拨打电话方法
-			makePhoneCall() { 
+			makePhoneCall() {
 				if (!this.rentCompany?.contactstel) {
 					uni.showToast({
 						title: '暂无联系电话',
@@ -146,19 +147,25 @@
 					return;
 				}
 
-				// 调用uniapp拨打电话API
-				uni.makePhoneCall({
-					phoneNumber: this.rentCompany?.contactstel,
-					success: () => {
-						console.log('拨打电话成功');
-					},
-					fail: (err) => {
-						console.error('拨打电话失败：', err);
-						uni.showToast({
-							title: '拨打电话失败，请手动拨打',
-							icon: 'none',
-							duration: 2000
-						});
+				uni.showModal({
+					title: '拨打电话',
+					content: `是否拨打电话：${this.rentCompany?.contactstel}`,
+					confirmText: '拨打',
+					cancelText: '取消',
+					success: (res) => {
+						if (res.confirm) {
+							uni.makePhoneCall({
+								phoneNumber: this.rentCompany?.contactstel,
+								fail: (err) => {
+									console.error('拨打电话失败：', err);
+									uni.showToast({
+										title: '拨打电话失败，请手动拨打',
+										icon: 'none',
+										duration: 2000
+									});
+								}
+							});
+						}
 					}
 				});
 			},
@@ -807,6 +814,7 @@
 		justify-content: center;
 		cursor: pointer;
 		transition: all 0.2s ease;
+		flex-direction: column;
 	}
 
 	.contact-btn:active {
@@ -817,6 +825,11 @@
 	.contact-img {
 		width: 24px;
 		height: 24px;
+	}
+
+	.contact-text {
+		font-size: 12px;
+		font-weight: bold;
 	}
 
 	.control-card {
