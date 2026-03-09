@@ -106,10 +106,10 @@
 				headerContainerStyle: {},
 				headerLeftStyle: {},
 				headerRightStyle: {},
-				// 地图初始坐标
+				// 地图初始坐标&用户当前位置
 				latitude: 39.908823,
 				longitude: 116.397470,
-				// 用户当前位置
+				// 车辆当前当前位置 
 				current_latitude: 39.908823,
 				current_longitude: 116.397470,
 				// 地图缩放级别（范围：3-20）
@@ -134,9 +134,11 @@
 			this.initLoginState()
 			// 设备信息获取
 			this.InitDetermineEquipment()
+			// 获取当前位置
+			this.InitgetCurrentLocation()
 		},
 		methods: {
-			// 拨打电话方法
+			// 拨打咨询电话方法
 			makePhoneCall() {
 				if (!this.rentCompany?.contactstel) {
 					uni.showToast({
@@ -295,6 +297,38 @@
 					this.initSystemAndroid()
 				}
 			},
+			// 获取当前位置并直接输出（打印+弹窗）
+			InitgetCurrentLocation() {
+				uni.getSetting({
+					success: res => {
+						const getLoc = () => uni.getLocation({
+							type: 'gcj02',
+							success: loc => {
+								this.latitude = loc.latitude
+								this.longitude = loc.longitude
+							},
+							fail: err => uni.showToast({
+								title: err.errMsg.includes('auth') ? '权限已拒绝' : '获取位置失败',
+								icon: 'none'
+							})
+						});
+
+						// 未授权则请求授权，已授权直接获取
+						res.authSetting['scope.userLocation'] ?
+							getLoc() :
+							uni.authorize({
+								scope: 'scope.userLocation',
+								success: getLoc,
+								fail: () => uni.showModal({
+									title: '权限提示',
+									content: '需开启位置权限',
+									confirmText: '去设置',
+									success: r => r.confirm && uni.openSetting()
+								})
+							});
+					}
+				});
+			},
 			// 获取控车码并设置缓存,然后执行其他地图操作			
 			async InitSharingCode(evt) {
 				const {
@@ -347,8 +381,8 @@
 					const i = res.content || {};
 					Object.assign(this, {
 						...i,
-						latitude: i.latitude,
-						longitude: i.longitude,
+						current_latitude: i.latitude,
+						current_longitude: i.longitude,
 						g_images: [
 							i?.uploadImgUrl,
 							i?.uploadImgUrlFive,
@@ -673,8 +707,9 @@
 			},
 			// 导航规划
 			routePlan() {
-				const latitude = Number(this.latitude);
-				const longitude = Number(this.longitude);
+				console.log(this)
+				const latitude = Number(this.current_latitude);
+				const longitude = Number(this.current_longitude);
 				uni.openLocation({
 					latitude,
 					longitude,
