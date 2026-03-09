@@ -126,17 +126,18 @@
 				contactPhone: '400-123-4567'
 			};
 		},
-		onLoad(options) {
+		async onLoad(options) {
+			// 获取当前位置
+			await this.InitgetCurrentLocation();
 			// 控车码
-			this.InitSharingCode(options)
+			await this.InitSharingCode(options);
 		},
 		onShow() {
 			// 获取登录状态
 			this.initLoginState()
 			// 设备信息获取
 			this.InitDetermineEquipment()
-			// 获取当前位置
-			this.InitgetCurrentLocation()
+
 		},
 		methods: {
 			// 拨打咨询电话方法
@@ -375,45 +376,64 @@
 			},
 			// 获取控车码并设置缓存,然后执行其他地图操作			
 			async InitSharingCode(evt = {}) {
-				let finalShareCode = (evt.scene || evt.query) || '';
+				let finalShareCode = evt.scene || evt.query || '';
 				if (!finalShareCode) {
 					const {
 						token = '', mobile = ''
 					} = uni.getStorageSync('userKey') ?? {};
-					finalShareCode = token ?
-						(await (async () => {
+					finalShareCode = token ? (
+						await (async () => {
 							try {
 								const {
 									code,
 									content
 								} = await u_getControlCodeByMobile({
-									mobile: mobile
+									mobile
 								}) || {};
-								if (code == 1000 && content) {
-									if (content && content.length > 1) {
-										const {
-											tapIndex
-										} = await uni.showActionSheet({
-											itemList: content.map(car =>
-												`${car.vehicleSerialName||''}${car.vehicleModeName||''}(${car.platenumber})`
-											),
-											title: '请选择车辆'
-										});
-										const selectedCar = content[tapIndex];
-										return selectedCar?.controlcode || (uni.getStorageSync('scene') ||
-											'');
+								if (code === 1000 && content) {
+									if (Array.isArray(content) && content.length > 1) {
+										let selectedCar = null;
+										while (!selectedCar) {
+											try {
+												const {
+													tapIndex
+												} = await uni.showActionSheet({
+													itemList: content.map(car =>
+														`${car.vehicleSerialName || ''}${car.vehicleModeName || ''}(${car.platenumber || '未上牌'})`
+													),
+													showCancel: false,
+													mask: true
+
+												});
+												selectedCar = content[tapIndex];
+											} catch (error) {
+
+												uni.showToast({
+													title: '请选择一辆车辆',
+													icon: 'none',
+													duration: 1500
+												});
+											}
+										}
+										return selectedCar?.controlcode || uni.getStorageSync('scene') ||
+											'';
 									}
-									return content.controlcode || (uni.getStorageSync('scene') || '');
+									const targetCar = Array.isArray(content) ? content[0] : content;
+									return targetCar?.controlcode || uni.getStorageSync('scene') || '';
 								}
+
+
 								return uni.getStorageSync('scene') || '';
 							} catch (err) {
 								console.error('接口获取分享码失败，降级缓存：', err);
 								return uni.getStorageSync('scene') || '';
 							}
-						})()) :
-						(uni.getStorageSync('scene') || '');
+						})()
+					) : (uni.getStorageSync('scene') || '');
 				}
-				finalShareCode && (() => {
+
+
+				if (finalShareCode) {
 					try {
 						this.shareCode = finalShareCode;
 						this.handleSearchLink(finalShareCode);
@@ -421,7 +441,7 @@
 					} catch (err) {
 						console.error('处理分享码失败：', err);
 					}
-				})();
+				}
 			},
 			// 获取车辆位置
 			handleSearchLink(evt) {
