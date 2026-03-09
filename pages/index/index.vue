@@ -4,7 +4,7 @@
 		<view class="header" :style="headerStyle">
 			<view class="header-container" :style="headerContainerStyle">
 				<view class="header-left" :style="headerLeftStyle">
-					<text class="header-title">电子钥匙</text>
+					<text class="header-title">智钥通</text>
 				</view>
 				<view class="header-right" :style="headerRightStyle">
 					<text class="header-icon" @click="handleLogin">{{login_status?'个人中心':'请登录'}}</text>
@@ -49,8 +49,8 @@
 			</view>
 
 			<!-- 核心地图组件 -->
-			<map class="map" :latitude="latitude" :longitude="longitude" :scale="mapScale" show-location @tap="handleMapClick"
-				:markers="markers" @regionchange="handleOnMapRegionChange"></map>
+			<map class="map" :latitude="latitude" :longitude="longitude" :scale="mapScale" show-location
+				@tap="handleMapClick" :markers="markers" @regionchange="handleOnMapRegionChange"></map>
 		</view>
 
 		<!-- 底部控制栏（5个按钮） -->
@@ -231,8 +231,6 @@
 			// Android app
 			initSystemAndroid() {
 				const systemInfo = uni.getSystemInfoSync();
-				console.log(systemInfo);
-
 				// ========== 1. 定义App端核心参数（对齐小程序端字段结构） ==========
 				const statusBarHeight = systemInfo.statusBarHeight || 0; // 状态栏高度
 				const navBarHeight = 48; // Android App导航栏标准高度（可根据UI设计调整）
@@ -283,17 +281,63 @@
 					height: `${capsule_height - 2}px`, // 右侧区域高度（模拟胶囊高度-2px）
 					width: `${capsule_width}px` // 右侧区域宽度（模拟胶囊宽度）
 				};
-				console.log(`${capsule_height - 2}px`)
-				console.log(`${capsule_width}px`)
+			},
+			// iOS app 
+			initSystemIOS() {
+				const systemInfo = uni.getSystemInfoSync();
+				const statusBarHeight = systemInfo.statusBarHeight || 20;
+				const navBarHeight = 44;
+				const headHeight = statusBarHeight + navBarHeight;
+				const capsuleDefault = {
+					capsule_distance_to_the_right: 16,
+					capsule_top: statusBarHeight + 6,
+					capsule_left: systemInfo.screenWidth - 110,
+					capsule_width: 88,
+					capsule_height: 34,
+					capsule_bottom: statusBarHeight + 6 + 34,
+					capsule_right: systemInfo.screenWidth - 16
+				};
+
+				Object.assign(this, {
+					screen_width: systemInfo.screenWidth || 0,
+					screen_height: systemInfo.screenHeight || 0,
+					height_from_head: statusBarHeight,
+					head_height: headHeight,
+					...capsuleDefault
+				});
+				const {
+					capsule_height,
+					capsule_top,
+					capsule_left,
+					capsule_distance_to_the_right,
+					capsule_width
+				} = this;
+				const capsuleBaseHeight = capsule_height + capsule_top + 10;
+				const capsuleBaseWidth = capsule_left - (capsule_distance_to_the_right * 2);
+				this.headerStyle = {
+					height: `${Math.max(capsuleBaseHeight, navBarHeight)}px`,
+					width: `${Math.max(capsuleBaseWidth, systemInfo.screenWidth - 40)}px`
+				};
+				this.headerContainerStyle = {
+					height: `${capsule_top + capsule_height}px`
+				};
+				this.headerLeftStyle = {
+					height: `${capsule_height}px`
+				};
+				this.headerRightStyle = {
+					height: `${capsule_height - 2}px`,
+					width: `${capsule_width}px`
+				};
 			},
 			// 判断当前设备参数
 			InitDetermineEquipment() {
 				const deviceInfo = deviceDetector.getDeviceInfo();
-				if (deviceInfo.isMiniProgram && deviceInfo.isWechatMini) { //小程序环境
-					this.initSystemInfo()
-				}
-				if (deviceInfo.isApp && deviceInfo.isAndroid) { //安卓应用
-					this.initSystemAndroid()
+				if (deviceInfo.isMiniProgram && deviceInfo.isWechatMini) { // 微信小程序
+					this.initSystemInfo();
+				} else if (deviceInfo.isApp && deviceInfo.isAndroid) { // 安卓APP
+					this.initSystemAndroid();
+				} else if (deviceInfo.isApp && deviceInfo.isIos) { // iOS APP
+					this.initSystemIOS();
 				}
 			},
 			// 获取当前位置并直接输出（打印+弹窗）
@@ -336,7 +380,7 @@
 				} = evt || {};
 				const shareCode = shareCodeFromScene || shareCodeFromQuery;
 				const userStorage = uni.getStorageSync('userKey') || {};
-				const token = userStorage.token || '';
+				const token = userStorage.token || ''
 				let finalShareCode = '';
 
 				// 1. 优先级1：从跳转参数获取分享码（最高优先级）
@@ -345,16 +389,16 @@
 					finalShareCode = shareCode;
 				}
 				// 2. 优先级2：已登录则从接口获取分享码
-				// else if (token) {
-				// 	try {
-				// 		const res = await u_logo();
-				// 		if (res?.code === 1000 && res?.content?.scene) {
-				// 			finalShareCode = res.content.scene;
-				// 		}
-				// 	} catch (error) {
-				// 		console.error('获取登录态分享码失败：', error);
-				// 	}
-				// }
+				else if (token) {
+					try {
+						const res = await u_logo();
+						if (res?.code === 1000 && res?.content?.scene) {
+							finalShareCode = res.content.scene;
+						}
+					} catch (error) {
+						console.error('获取登录态分享码失败：', error);
+					}
+				}
 				// 3. 优先级3：从缓存获取分享码（最低优先级）
 				else {
 					finalShareCode = uni.getStorageSync('scene') || '';
@@ -546,7 +590,6 @@
 			},
 			// 蓝牙控制车辆
 			handleExecuteBluetooth(type) {
-				console.log(this)
 				const COMMAND_MAPPING = {
 					5: 5, // 远程寻车
 					1: (this?.deviceType == 'F1' || this?.deviceType == 'F0') ? 4 : 3, // 锁门
@@ -649,7 +692,6 @@
 			},
 			// 归还车辆
 			handleReturningVehicles() {
-				console.log(this)
 				if (!this.shareCode) {
 					uni.showToast({
 						title: '无可用车辆',
@@ -665,7 +707,6 @@
 			// 查看照片
 			handleViewPhotos() {
 				// 校验车辆编号是否存在
-				console.log(this)
 				if (!this.shareCode) {
 					// Uniapp 统一的提示框API
 					uni.showToast({
@@ -679,7 +720,6 @@
 				// 处理图片链接，拼接完整URL并替换路径分隔符
 				const images = this.g_images.map(ele => {
 					let temp = this.c_fin3_link + ele.replace(/\\/g, "/")
-					console.log(temp)
 					return temp
 				})
 
