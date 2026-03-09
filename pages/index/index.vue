@@ -95,8 +95,9 @@
 		u_getCarPoisitonByCode,
 		u_verifyControlcode,
 		u_operation,
-		u_logo
+		u_getControlCodeByMobile
 	} from '@/api';
+	import 'url-search-params-polyfill';
 	export default {
 		name: "MapPage",
 		data() {
@@ -373,47 +374,54 @@
 				});
 			},
 			// 获取控车码并设置缓存,然后执行其他地图操作			
-			async InitSharingCode(evt) {
-				const {
-					scene: shareCodeFromScene,
-					query: shareCodeFromQuery
-				} = evt || {};
-				const shareCode = shareCodeFromScene || shareCodeFromQuery;
-				const userStorage = uni.getStorageSync('userKey') || {};
-				const token = userStorage.token || ''
-				let finalShareCode = '';
-
-				// 1. 优先级1：从跳转参数获取分享码（最高优先级）
-				if (shareCode) {
-					console.log(shareCode, '222233')
-					finalShareCode = shareCode;
+			async InitSharingCode(evt = {}) {
+				let finalShareCode = (evt.scene || evt.query) || '';
+				if (!finalShareCode) {
+					const {
+						token = '', mobile = ''
+					} = uni.getStorageSync('userKey') ?? {};
+					finalShareCode = token ?
+						(await (async () => {
+							try {
+								const {
+									code,
+									content
+								} = await u_getControlCodeByMobile({
+									mobile: mobile
+								}) || {};
+								if (code == 1000 && content) {
+									if (content && content.length > 1) {
+										const {
+											tapIndex
+										} = await uni.showActionSheet({
+											itemList: content.map(car =>
+												`${car.vehicleSerialName||''}${car.vehicleModeName||''}(${car.platenumber})`
+											),
+											title: '请选择车辆'
+										});
+										const selectedCar = content[tapIndex];
+										return selectedCar?.controlcode || (uni.getStorageSync('scene') ||
+											'');
+									}
+									return content.controlcode || (uni.getStorageSync('scene') || '');
+								}
+								return uni.getStorageSync('scene') || '';
+							} catch (err) {
+								console.error('接口获取分享码失败，降级缓存：', err);
+								return uni.getStorageSync('scene') || '';
+							}
+						})()) :
+						(uni.getStorageSync('scene') || '');
 				}
-				// 2. 优先级2：已登录则从接口获取分享码
-				else if (token) {
-					try {
-						const res = await u_logo();
-						if (res?.code === 1000 && res?.content?.scene) {
-							finalShareCode = res.content.scene;
-						}
-					} catch (error) {
-						console.error('获取登录态分享码失败：', error);
-					}
-				}
-				// 3. 优先级3：从缓存获取分享码（最低优先级）
-				else {
-					finalShareCode = uni.getStorageSync('scene') || '';
-				}
-				console.log(finalShareCode)
-				// 4. 有有效分享码时统一处理（避免重复代码）
-				if (finalShareCode) {
+				finalShareCode && (() => {
 					try {
 						this.shareCode = finalShareCode;
 						this.handleSearchLink(finalShareCode);
 						uni.setStorageSync('scene', finalShareCode);
-					} catch (error) {
-						console.error('处理分享码失败：', error);
+					} catch (err) {
+						console.error('处理分享码失败：', err);
 					}
-				}
+				})();
 			},
 			// 获取车辆位置
 			handleSearchLink(evt) {
@@ -426,6 +434,8 @@
 						...i,
 						current_latitude: i.latitude,
 						current_longitude: i.longitude,
+						latitude: i.latitude,
+						longitude: i.longitude,
 						g_images: [
 							i?.uploadImgUrl,
 							i?.uploadImgUrlFive,
