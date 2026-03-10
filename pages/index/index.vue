@@ -122,7 +122,7 @@
 				// 当前登录状态
 				login_status: false,
 				c_fin3_link: 'https://fin3.wiselink.net.cn/fin/',
-				// 联系电话（可根据实际需求修改）
+				// 联系电话改）
 				contactPhone: '400-123-4567'
 			};
 		},
@@ -341,96 +341,96 @@
 					this.initSystemIOS();
 				}
 			},
-			// 获取当前位置并直接输出（打印+弹窗）
+			// 获取当前位置并直接输出
 			InitgetCurrentLocation(options) {
+				const getLoc = () => uni.getLocation({
+					type: 'gcj02',
+					success: loc => this.InitSharingCode(options, loc),
+					fail: err => uni.showToast({
+						title: err.errMsg.includes('auth') ? '权限已拒绝' : '获取位置失败',
+						icon: 'none'
+					})
+				});
+
 				uni.getSetting({
-					success: res => {
-						const getLoc = () => uni.getLocation({
-							type: 'gcj02',
-							success: loc => {
-								this.InitSharingCode(options, loc);
-							},
-							fail: err => uni.showToast({
-								title: err.errMsg.includes('auth') ? '权限已拒绝' : '获取位置失败',
-								icon: 'none'
+					success: ({
+						authSetting
+					}) => {
+						if (authSetting['scope.userLocation']) return getLoc();
+						uni.authorize({
+							scope: 'scope.userLocation',
+							success: getLoc,
+							fail: () => uni.showModal({
+								title: '权限提示',
+								content: '需开启位置权限',
+								confirmText: '去设置',
+								success: r => r.confirm && uni.openSetting()
 							})
 						});
-
-						// 未授权则请求授权，已授权直接获取
-						res.authSetting['scope.userLocation'] ?
-							getLoc() :
-							uni.authorize({
-								scope: 'scope.userLocation',
-								success: getLoc,
-								fail: () => uni.showModal({
-									title: '权限提示',
-									content: '需开启位置权限',
-									confirmText: '去设置',
-									success: r => r.confirm && uni.openSetting()
-								})
-							});
 					}
 				});
 			},
 			// 获取控车码并设置缓存,然后执行其他地图操作			
 			async InitSharingCode(evt = {}, loc = {}) {
 				let finalShareCode = evt.scene || evt.query || '';
+				// 标记是否触发经纬度赋值（默认触发，满足条件则置为false）
+				let needSetLocation = true;
+
 				if (!finalShareCode) {
 					const {
 						token = '', mobile = ''
 					} = uni.getStorageSync('userKey') ?? {};
-					finalShareCode = token ? (
-						await (async () => {
-							try {
-								const {
-									code,
-									content
-								} = await u_getControlCodeByMobile({
-									mobile
-								}) || {};
-								if (code === 1000 && content) {
-									if (Array.isArray(content) && content.length > 1) {
-										let selectedCar = null;
-										while (!selectedCar) {
-											try {
-												const {
-													tapIndex
-												} = await uni.showActionSheet({
-													itemList: content.map(car =>
-														`${car.vehicleSerialName || ''}${car.vehicleModeName || ''}(${car.platenumber || '未上牌'})`
-													),
-													showCancel: false,
-													mask: true
+					if (token) {
+						try {
+							const {
+								code,
+								content
+							} = await u_getControlCodeByMobile({
+								mobile
+							}) || {};
+							if (code === 1000 && content) {
+								needSetLocation = false; // 满足条件，不触发经纬度赋值
+								let targetCar = null;
 
-												});
-												selectedCar = content[tapIndex];
-											} catch (error) {
-
-												uni.showToast({
-													title: '请选择一辆车辆',
-													icon: 'none',
-													duration: 1500
-												});
-											}
+								// 多车辆则选择，单车辆则取第一个
+								if (Array.isArray(content) && content.length > 1) {
+									while (!targetCar) {
+										try {
+											const {
+												tapIndex
+											} = await uni.showActionSheet({
+												itemList: content.map(car =>
+													`${car.vehicleSerialName || ''}${car.vehicleModeName || ''}(${car.platenumber || '未上牌'})`
+												),
+												showCancel: false,
+												mask: true
+											});
+											targetCar = content[tapIndex];
+										} catch (error) {
+											uni.showToast({
+												title: '请选择一辆车辆',
+												icon: 'none',
+												duration: 1500
+											});
 										}
-										return selectedCar?.controlcode || uni.getStorageSync('scene') ||
-											'';
 									}
-									const targetCar = Array.isArray(content) ? content[0] : content;
-									return targetCar?.controlcode || uni.getStorageSync('scene') || '';
+								} else {
+									targetCar = Array.isArray(content) ? content[0] : content;
 								}
-
-
-								return uni.getStorageSync('scene') || '';
-							} catch (err) {
-								console.error('接口获取分享码失败，降级缓存：', err);
-								return uni.getStorageSync('scene') || '';
+								finalShareCode = targetCar?.controlcode || uni.getStorageSync('scene') || '';
 							}
-						})()
-					) : (uni.getStorageSync('scene') || '');
+						} catch (err) {
+							console.error('接口获取分享码失败，降级缓存：', err);
+							finalShareCode = uni.getStorageSync('scene') || '';
+						}
+					} else {
+						finalShareCode = uni.getStorageSync('scene') || '';
+					}
+				} else {
+					needSetLocation = false; // 有初始分享码，不触发经纬度赋值
 				}
 
-
+				// 处理有效分享码
 				if (finalShareCode) {
 					try {
 						this.shareCode = finalShareCode;
@@ -439,9 +439,11 @@
 					} catch (err) {
 						console.error('处理分享码失败：', err);
 					}
-				} else {
-					this.latitude = loc.latitude
-					this.longitude = loc.longitud
+				}
+				// 所有条件不满足时，赋值经纬度（修复longitude拼写错误）
+				else if (needSetLocation && loc.latitude && loc.longitude) {
+					this.latitude = loc.latitude;
+					this.longitude = loc.longitude; // 原代码少写一个e，已修复
 				}
 			},
 			// 获取车辆位置
