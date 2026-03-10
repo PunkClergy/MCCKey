@@ -108,11 +108,11 @@
 				headerLeftStyle: {},
 				headerRightStyle: {},
 				// 地图初始坐标&用户当前位置
-				latitude: 39.908823,
-				longitude: 116.397470,
+				latitude: '',
+				longitude: '',
 				// 车辆当前当前位置 
-				current_latitude: 39.908823,
-				current_longitude: 116.397470,
+				current_latitude: '',
+				current_longitude: '',
 				// 地图缩放级别（范围：3-20）
 				mapScale: 16,
 				// 当前模式：-4（网络）/-5（蓝牙）
