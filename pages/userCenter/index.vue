@@ -29,9 +29,10 @@
 
 <script>
 	import {
-		u_logo
+		u_logo,
+		u_getControlCodeByMobile
 	} from '@/api';
-
+	import 'url-search-params-polyfill';
 	export default {
 		name: 'UserCenter',
 		data() {
@@ -70,7 +71,8 @@
 						handleEvent: 'signOut',
 						text: '退出登录'
 					}
-				]
+				],
+				carList: [], //车辆列表
 			};
 		},
 		computed: {
@@ -96,13 +98,46 @@
 		},
 		onShow() {
 			this.init();
+
 		},
 		methods: {
+			async initCodeByMobile() {
+				const userStorage = uni.getStorageSync('userKey') || {};
+				const mobile = userStorage.mobile || '';
+				if (!mobile) {
+					console.warn('initCodeByMobile: 手机号为空，跳过控制码请求');
+					return;
+				}
+				const response = await u_getControlCodeByMobile({
+					mobile
+				});
+				if (!response || typeof response !== 'object') {
+					console.error('initCodeByMobile: 接口返回格式异常', response);
+					return;
+				}
+				const {
+					code,
+					content
+				} = response;
+				const SUCCESS_CODE = 1000;
+				const MIN_CONTENT_LENGTH = 2;
+				if (code === SUCCESS_CODE && Array.isArray(content) && content.length >= MIN_CONTENT_LENGTH) {
+					this.contentList = [{
+							icon: '/static/images/contact.png',
+							handleEvent: 'vehicles',
+							text: '切换车辆'
+						},
+						...this.contentList,
+					];
+					this.carList = content
+				}
+			},
 			// 统一初始化入口
 			async init() {
 				this.getSystemInfo();
 				this.getLoginInfo();
 				await this.getLogo();
+				this.initCodeByMobile()
 			},
 
 			// 获取系统信息（精简逻辑）
@@ -214,17 +249,97 @@
 				});
 			},
 
-			// 统一事件处理（精简switch）
+			// 统一事件处理
 			handleItemClick(item) {
 				const actionMap = {
 					contactUs: () => this.callPhone(this.servicePhone),
 					switchAccount: () => uni.navigateTo({
 						url: '/pages/login/index'
 					}),
-					signOut: () => this.logout()
+					signOut: () => this.logout(),
+					vehicles:()=>this.handleSwitchVehicles()
 				};
 				actionMap[item.handleEvent]?.();
-			}
+			},
+
+			// 处理切换车辆逻辑，展示车辆列表弹窗，选择后跳转至对应车辆首页
+			async handleSwitchVehicles() {
+				const carList = this.carList || [];
+				if (!Array.isArray(carList) || carList.length === 0) {
+					uni.showToast({
+						title: '暂无可选车辆',
+						icon: 'none',
+						duration: 2000
+					});
+					console.warn('handleSwitchVehicles: 车辆列表为空，终止切换操作');
+					return;
+				}
+				const vehicleItemList = carList.map(car => {
+					const serialName = car?.vehicleSerialName || '';
+					const modeName = car?.vehicleModeName || '';
+					const plateNumber = car?.platenumber || '未上牌';
+					const prefix = `${serialName}${modeName}`.trim();
+					return prefix ? `${prefix}(${plateNumber})` : `(${plateNumber})`;
+				});
+
+				if (vehicleItemList.length === 0) {
+					uni.showToast({
+						title: '车辆信息异常',
+						icon: 'none',
+						duration: 2000
+					});
+					return;
+				}
+
+				const sheetRes = await uni.showActionSheet({
+					itemList: vehicleItemList,
+					showCancel: false,
+					mask: true
+				});
+
+				if (!sheetRes || typeof sheetRes.tapIndex !== 'number') {
+					console.info('handleSwitchVehicles: 用户取消选择车辆');
+					return;
+				}
+
+				const {
+					tapIndex
+				} = sheetRes;
+				if (tapIndex < 0 || tapIndex >= carList.length) {
+					uni.showToast({
+						title: '选择车辆异常',
+						icon: 'none',
+						duration: 2000
+					});
+					console.error('handleSwitchVehicles: 选中索引超出车辆列表范围', tapIndex, carList.length);
+					return;
+				}
+				const selectedCar = carList[tapIndex];
+				const controlCode = selectedCar?.controlcode;
+				if (!controlCode) {
+					uni.showToast({
+						title: '该车辆无控制码，无法切换',
+						icon: 'none',
+						duration: 2000
+					});
+					console.warn('handleSwitchVehicles: 选中车辆缺少controlcode', selectedCar);
+					return;
+				}
+				const targetUrl = `/pages/index/index?scene=${encodeURIComponent(controlCode)}`;
+				uni.redirectTo({
+					url: targetUrl,
+					fail: (err) => {
+						uni.showToast({
+							title: '切换车辆失败',
+							icon: 'none',
+							duration: 2000
+						});
+						console.error('handleSwitchVehicles: 页面跳转失败', err, targetUrl);
+					}
+				});
+
+				console.log('handleSwitchVehicles: 选中车辆信息', selectedCar);
+			},
 		}
 	};
 </script>
