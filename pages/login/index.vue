@@ -286,7 +286,7 @@
 					content: message,
 					showCancel: false
 				});
-			}
+			},
 			// 登录成功统一处理（核心复用逻辑）
 			handleLoginSuccess(userInfo) {
 				const app = getApp?.() || getApp({

@@ -2,14 +2,14 @@
 	"pages": [{
 			"path": "pages/index/index",
 			"style": {
-				"navigationBarTitleText": "智钥通"
+				"navigationBarTitleText": "智车钥"
 			}
 		},
 		{
 			"path": "pages/login/index",
 			"style": {
 				"navigationStyle": "default",
-				"navigationBarTitleText": "智钥通登录",
+				"navigationBarTitleText": "智车钥登录",
 				"navigationBarBackgroundColor": "#252C3B",
 				"navigationBarTextStyle": "white"
 			}
