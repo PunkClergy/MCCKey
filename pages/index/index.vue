@@ -338,7 +338,7 @@
 					this.initSystemInfo();
 				} else if (deviceInfo.isApp && deviceInfo.isAndroid) { // 安卓APP
 					this.initSystemAndroid();
-				} else if (deviceInfo.isApp && deviceInfo.isIos) { // iOS APP
+				} else if (deviceInfo.isApp && deviceInfo.isIOS) { // iOS APP
 					this.initSystemIOS();
 				}
 			},
