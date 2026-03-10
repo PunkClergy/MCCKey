@@ -127,10 +127,9 @@
 			};
 		},
 		async onLoad(options) {
-			// 获取当前位置
-			await this.InitgetCurrentLocation();
-			// 控车码
-			await this.InitSharingCode(options);
+			// 获取当前位置+验证控车
+			await this.InitgetCurrentLocation(options);
+
 		},
 		onShow() {
 			// 获取登录状态
@@ -343,14 +342,13 @@
 				}
 			},
 			// 获取当前位置并直接输出（打印+弹窗）
-			InitgetCurrentLocation() {
+			InitgetCurrentLocation(options) {
 				uni.getSetting({
 					success: res => {
 						const getLoc = () => uni.getLocation({
 							type: 'gcj02',
 							success: loc => {
-								this.latitude = loc.latitude
-								this.longitude = loc.longitude
+								this.InitSharingCode(options, loc);
 							},
 							fail: err => uni.showToast({
 								title: err.errMsg.includes('auth') ? '权限已拒绝' : '获取位置失败',
@@ -375,7 +373,7 @@
 				});
 			},
 			// 获取控车码并设置缓存,然后执行其他地图操作			
-			async InitSharingCode(evt = {}) {
+			async InitSharingCode(evt = {}, loc = {}) {
 				let finalShareCode = evt.scene || evt.query || '';
 				if (!finalShareCode) {
 					const {
@@ -441,6 +439,9 @@
 					} catch (err) {
 						console.error('处理分享码失败：', err);
 					}
+				} else {
+					this.latitude = loc.latitude
+					this.longitude = loc.longitud
 				}
 			},
 			// 获取车辆位置
