@@ -35,6 +35,7 @@
 						<view class="input-label">密码</view>
 						<input class="input-field" placeholder='请输入密码' @input='e=>password_value=e.detail.value'
 							password />
+
 					</view>
 					<view @tap="handleAccountLogin">
 						<button class="login-btn">登录</button>
@@ -53,7 +54,7 @@
 		<!-- 信息展示区域 -->
 		<view class="info-area">
 			<view class="info-card">
-				<text class="product-name">智钥通</text>
+				<text class="product-name">智车钥</text>
 				<view class="desc-text">手机汽车电子钥匙：不怕丢失、性价比高、可魔变多把钥匙，支持分享授权使用；</view>
 				<view class="desc-text">请点击 / 长按识别二维码，下载官方 APP！</view>
 				<view class="qr-container">
@@ -285,8 +286,7 @@
 					content: message,
 					showCancel: false
 				});
-			},
-
+			}
 			// 登录成功统一处理（核心复用逻辑）
 			handleLoginSuccess(userInfo) {
 				const app = getApp?.() || getApp({
@@ -386,6 +386,7 @@
 		font-weight: 500;
 		margin-top: 20rpx;
 	}
+
 
 	/* 单选按钮 */
 	.radio-container {

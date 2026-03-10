@@ -4,7 +4,7 @@
 		<view class="header" :style="headerStyle">
 			<view class="header-container" :style="headerContainerStyle">
 				<view class="header-left" :style="headerLeftStyle">
-					<text class="header-title">智钥通</text>
+					<text class="header-title">智车钥</text>
 				</view>
 				<view class="header-right" :style="headerRightStyle">
 					<text class="header-icon" @click="handleLogin">{{login_status?'个人中心':'请登录'}}</text>
