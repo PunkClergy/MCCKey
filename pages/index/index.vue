@@ -7,25 +7,37 @@
 					<text class="header-title">智车钥</text>
 				</view>
 				<view class="header-right" :style="headerRightStyle">
-					<text class="header-icon" @click="handleLogin">{{login_status?'个人中心':'请登录'}}</text>
+					<text class="header-icon" @click="handleLogin">{{ login_status ? '个人中心' : '请登录' }}</text>
 				</view>
 			</view>
 		</view>
 
 		<!-- 地图主体区域 -->
 		<view class="map-container">
-			<!-- 左上角：网络/蓝牙模式切换（图片版-上下排列） -->
+			<!-- 左上角：网络/蓝牙模式切换 -->
 			<view class="top-left-controls">
 				<view class="control-card">
-					<view class="mode-item" :class="{ active: currentMode === -4 }" @click="handleControl('-4')">
-						<image class="mode-img"
-							:src="currentMode === -4 ? '/static/images/wifi_1.png' : '/static/images/wifi.png'"
-							mode="widthFix"></image>
+					<view 
+						class="mode-item" 
+						:class="{ active: currentMode === modeTypes.NETWORK }" 
+						@click="handleControl(modeTypes.NETWORK)"
+					>
+						<image 
+							class="mode-img"
+							:src="currentMode === modeTypes.NETWORK ? '/static/images/wifi_1.png' : '/static/images/wifi.png'"
+							mode="widthFix"
+						></image>
 					</view>
-					<view class="mode-item" :class="{ active: currentMode === -5 }" @click="handleControl('-5')">
-						<image class="mode-img"
-							:src="currentMode === -5 ? '/static/images/bluetooth_1.png' : '/static/images/bluetooth.png'"
-							mode="widthFix"></image>
+					<view 
+						class="mode-item" 
+						:class="{ active: currentMode === modeTypes.BLUETOOTH }" 
+						@click="handleControl(modeTypes.BLUETOOTH)"
+					>
+						<image 
+							class="mode-img"
+							:src="currentMode === modeTypes.BLUETOOTH ? '/static/images/bluetooth_1.png' : '/static/images/bluetooth.png'"
+							mode="widthFix"
+						></image>
 					</view>
 				</view>
 			</view>
@@ -49,36 +61,39 @@
 			</view>
 
 			<!-- 核心地图组件 -->
-			<map class="map" :latitude="latitude" :longitude="longitude" :scale="mapScale" show-location
-				@tap="handleMapClick" :markers="markers" @regionchange="handleOnMapRegionChange"></map>
+			<map 
+				class="map" 
+				:latitude="latitude" 
+				:longitude="longitude" 
+				:scale="mapScale" 
+				show-location
+				@tap="handleMapClick" 
+				:markers="markers" 
+				@regionchange="handleOnMapRegionChange"
+			></map>
 		</view>
 
 		<!-- 底部控制栏（5个按钮） -->
 		<view class="bottom-controls">
 			<view class="control-bar">
-				<view class="control-btn" @click="handleFooterBtn(3)">
-					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_unlock.png"
-						mode="widthFix"></image>
+				<view class="control-btn" @click="handleFooterBtn(btnTypes.UNLOCK)">
+					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_unlock.png" mode="widthFix"></image>
 					<text class="btn-text">开锁</text>
 				</view>
-				<view class="control-btn" @click="handleFooterBtn(1)">
-					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_lock.png" mode="widthFix">
-					</image>
+				<view class="control-btn" @click="handleFooterBtn(btnTypes.LOCK)">
+					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_lock.png" mode="widthFix"></image>
 					<text class="btn-text">关锁</text>
 				</view>
-				<view class="control-btn" @click="handleFooterBtn(5)">
-					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_lookFor.png"
-						mode="widthFix"></image>
+				<view class="control-btn" @click="handleFooterBtn(btnTypes.FIND_CAR)">
+					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_lookFor.png" mode="widthFix"></image>
 					<text class="btn-text">寻车</text>
 				</view>
 				<view class="control-btn" @click="handleReturningVehicles">
-					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_return.png"
-						mode="widthFix"></image>
+					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_return.png" mode="widthFix"></image>
 					<text class="btn-text">还车</text>
 				</view>
 				<view class="control-btn" @click="handleViewPhotos">
-					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_photo.png" mode="widthFix">
-					</image>
+					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_photo.png" mode="widthFix"></image>
 					<text class="btn-text">查看</text>
 				</view>
 			</view>
@@ -87,81 +102,89 @@
 </template>
 
 <script>
-	import {
-		deviceDetector
-	} from '@/utils/ToolClass.js';
+	import { deviceDetector } from '@/utils/ToolClass.js';
 	import bleManager from '@/utils/BleKeyFun-utils-single.js';
-	import {
-		u_getCarPoisitonByCode,
-		u_verifyControlcode,
-		u_operation,
-		u_getControlCodeByMobile
-	} from '@/api';
+	import { u_getCarPoisitonByCode, u_operation, u_getControlCodeByMobile } from '@/api';
 	import 'url-search-params-polyfill';
+
+	// 常量定义（提升可读性和可维护性）
+	const MODE_TYPES = {
+		NETWORK: -4,
+		BLUETOOTH: -5
+	};
+	const BTN_TYPES = {
+		UNLOCK: 3,
+		LOCK: 1,
+		FIND_CAR: 5
+	};
+	const DEFAULT_CONTACT_PHONE = '400-123-4567';
+	const MAP_SCALE_DEFAULT = 16;
+
 	export default {
 		name: "MapPage",
 		data() {
 			return {
+				// 常量挂载（模板可直接使用）
+				modeTypes: MODE_TYPES,
+				btnTypes: BTN_TYPES,
 				// 头部动态样式
 				headerStyle: {},
 				headerContainerStyle: {},
 				headerLeftStyle: {},
 				headerRightStyle: {},
-				// 地图初始坐标&用户当前位置
+				// 地图相关
 				latitude: '',
 				longitude: '',
-				// 车辆当前当前位置 
 				current_latitude: '',
 				current_longitude: '',
-				// 地图缩放级别（范围：3-20）
-				mapScale: 16,
-				// 当前模式：-4（网络）/-5（蓝牙）
-				currentMode: -4,
-				// 汽车位置地图标记点
+				mapScale: MAP_SCALE_DEFAULT,
+				currentMode: MODE_TYPES.NETWORK,
 				markers: [],
-				// 当前登录状态
+				// 状态相关
 				login_status: false,
 				c_fin3_link: 'https://fin3.wiselink.net.cn/fin/',
-				// 联系电话
-				contactPhone: '400-123-4567',
-				// 新增：设备信息缓存
+				contactPhone: DEFAULT_CONTACT_PHONE,
+				// 业务数据
 				deviceInfo: {},
-				// 新增：分享码
 				shareCode: '',
-				// 新增：租车公司信息
 				rentCompany: {},
-				// 新增：图片链接列表
-				g_images: []
+				g_images: [],
+				// 临时状态
+				sn: '',
+				idc: '',
+				blueKey: '',
+				deviceType: ''
 			};
 		},
 		async onLoad(options) {
-			// 获取设备信息
-			this.deviceInfo = deviceDetector.getDeviceInfo();
-			// 获取当前位置+验证控车
-			await this.InitgetCurrentLocation(options);
+			try {
+				this.deviceInfo = deviceDetector.getDeviceInfo();
+				await this.InitgetCurrentLocation(options);
+			} catch (error) {
+				console.error('页面初始化失败:', error);
+			}
 		},
 		onShow() {
-			console.log(this.latitude)
-			// 获取登录状态
-			this.initLoginState()
-			// 设备信息获取
-			this.InitDetermineEquipment()
-			if (!(this.latitude || this.longitude)) {
-				this.InitgetCurrentLocation()
+			try {
+				console.log(this.latitude);
+				this.initLoginState();
+				this.InitDetermineEquipment();
+				if (!this.latitude || !this.longitude) {
+					this.InitgetCurrentLocation();
+				}
+			} catch (error) {
+				console.error('页面显示失败:', error);
 			}
 		},
 		methods: {
-			// 拨打咨询电话方法
+			/**
+			 * 拨打咨询电话
+			 */
 			makePhoneCall() {
-				// 优先使用租车公司电话，无则使用默认电话
 				const phoneNumber = this.rentCompany?.contactstel || this.contactPhone;
 
 				if (!phoneNumber) {
-					uni.showToast({
-						title: '暂无联系电话',
-						icon: 'none',
-						duration: 2000
-					});
+					this.$showToast('暂无联系电话');
 					return;
 				}
 
@@ -173,163 +196,155 @@
 					success: (res) => {
 						if (res.confirm) {
 							uni.makePhoneCall({
-								phoneNumber: phoneNumber,
+								phoneNumber,
 								fail: (err) => {
 									console.error('拨打电话失败：', err);
-									uni.showToast({
-										title: '拨打电话失败，请手动拨打',
-										icon: 'none',
-										duration: 2000
-									});
+									this.$showToast('拨打电话失败，请手动拨打');
 								}
 							});
 						}
 					}
 				});
 			},
-			// 微信小程序系统信息初始化
+
+			/**
+			 * 通用提示框封装
+			 * @param {string} title 提示文本
+			 * @param {string} icon 图标类型
+			 * @param {number} duration 显示时长
+			 */
+			$showToast(title, icon = 'none', duration = 2000) {
+				uni.showToast({ title, icon, duration });
+			},
+
+			/**
+			 * 微信小程序系统信息初始化
+			 */
 			initSystemInfo() {
-				const systemInfo = uni.getSystemInfoSync();
-				const statusBarHeight = systemInfo.statusBarHeight || 0;
-				let menuButtonInfo = uni.getMenuButtonBoundingClientRect?.() || null;
-				const systemInfoObj = {
-					screen_width: systemInfo.screenWidth || 0,
-					screen_height: systemInfo.screenHeight || 0,
-					height_from_head: statusBarHeight,
-					head_height: !menuButtonInfo ?
-						statusBarHeight + 44 : statusBarHeight + menuButtonInfo.height + (menuButtonInfo.top -
-							statusBarHeight) * 2,
-					capsule_distance_to_the_right: 16,
-					capsule_top: 0,
-					capsule_left: 0,
-					capsule_width: 0,
-					capsule_height: 0,
-					capsule_bottom: 0,
-					capsule_right: 0,
-					...(menuButtonInfo && {
-						capsule_distance_to_the_right: systemInfo.screenWidth - menuButtonInfo.right,
-						capsule_top: menuButtonInfo.top,
-						capsule_left: menuButtonInfo.left,
-						capsule_width: menuButtonInfo.width,
-						capsule_height: menuButtonInfo.height,
-						capsule_bottom: menuButtonInfo.bottom,
-						capsule_right: menuButtonInfo.right
-					})
-				};
+				try {
+					const systemInfo = uni.getSystemInfoSync();
+					const statusBarHeight = systemInfo.statusBarHeight || 0;
+					const menuButtonInfo = uni.getMenuButtonBoundingClientRect?.() || {};
+					
+					const systemInfoObj = {
+						screen_width: systemInfo.screenWidth || 0,
+						screen_height: systemInfo.screenHeight || 0,
+						height_from_head: statusBarHeight,
+						head_height: !menuButtonInfo.height 
+							? statusBarHeight + 44 
+							: statusBarHeight + menuButtonInfo.height + (menuButtonInfo.top - statusBarHeight) * 2,
+						capsule_distance_to_the_right: systemInfo.screenWidth - (menuButtonInfo.right || systemInfo.screenWidth - 16),
+						capsule_top: menuButtonInfo.top || 0,
+						capsule_left: menuButtonInfo.left || 0,
+						capsule_width: menuButtonInfo.width || 0,
+						capsule_height: menuButtonInfo.height || 0,
+						capsule_bottom: menuButtonInfo.bottom || 0,
+						capsule_right: menuButtonInfo.right || 0
+					};
 
-				Object.assign(this, systemInfoObj);
+					Object.assign(this, systemInfoObj);
 
-				const {
-					capsule_height,
-					capsule_top,
-					capsule_left,
-					capsule_distance_to_the_right
-				} = this;
-				const capsuleBaseHeight = capsule_height + capsule_top + 10;
-				const capsuleBaseWidth = capsule_left - (capsule_distance_to_the_right * 2);
+					const { capsule_height, capsule_top, capsule_left, capsule_distance_to_the_right, capsule_width } = this;
+					const capsuleBaseHeight = capsule_height + capsule_top + 10;
+					const capsuleBaseWidth = capsule_left - (capsule_distance_to_the_right * 2);
 
-				this.headerStyle = {
-					height: `${Math.max(capsuleBaseHeight, 44)}px`,
-					width: `${capsuleBaseWidth}px`
-				};
-				this.headerContainerStyle = {
-					height: `${capsule_top + capsule_height}px`
-				};
-				this.headerLeftStyle = {
-					height: `${capsule_height}px`
-				};
-
-				this.headerRightStyle = {
-					height: `${this.capsule_height -2}px`,
-					width: `${this.capsule_width}px`
+					this.headerStyle = {
+						height: `${Math.max(capsuleBaseHeight, 44)}px`,
+						width: `${capsuleBaseWidth}px`
+					};
+					this.headerContainerStyle = {
+						height: `${capsule_top + capsule_height}px`
+					};
+					this.headerLeftStyle = {
+						height: `${capsule_height}px`
+					};
+					this.headerRightStyle = {
+						height: `${(capsule_height || 0) - 2}px`,
+						width: `${capsule_width}px`
+					};
+				} catch (error) {
+					console.error('小程序系统信息初始化失败:', error);
 				}
 			},
-			// Android app 系统信息初始化
+
+			/**
+			 * Android app 系统信息初始化
+			 */
 			initSystemAndroid() {
-				const systemInfo = uni.getSystemInfoSync();
-				// 1. 定义App端核心参数（对齐小程序端字段结构）
-				const statusBarHeight = systemInfo.statusBarHeight || 0; // 状态栏高度
-				const navBarHeight = 48; // Android App导航栏标准高度（可根据UI设计调整）
-				const headHeight = statusBarHeight + navBarHeight; // 头部总高度（状态栏+导航栏）
-				// App端无胶囊按钮，模拟胶囊相关字段（保证样式计算不报错）
-				const capsuleDefault = {
-					capsule_distance_to_the_right: 16, // 默认右侧间距（和小程序端一致）
-					capsule_top: statusBarHeight + 8, // 胶囊模拟top值（状态栏下8px）
-					capsule_left: systemInfo.screenWidth - 120, // 模拟胶囊left值（右侧120px）
-					capsule_width: 80, // 模拟胶囊宽度
-					capsule_height: 32, // 模拟胶囊高度
-					capsule_bottom: statusBarHeight + 8 + 32, // 模拟胶囊bottom值
-					capsule_right: systemInfo.screenWidth - 16 // 模拟胶囊right值
-				};
+				try {
+					const systemInfo = uni.getSystemInfoSync();
+					const statusBarHeight = systemInfo.statusBarHeight || 0;
+					const navBarHeight = 48;
+					const headHeight = statusBarHeight + navBarHeight;
+					
+					const capsuleDefault = {
+						capsule_distance_to_the_right: 16,
+						capsule_top: statusBarHeight + 8,
+						capsule_left: systemInfo.screenWidth - 120,
+						capsule_width: 80,
+						capsule_height: 32,
+						capsule_bottom: statusBarHeight + 8 + 32,
+						capsule_right: systemInfo.screenWidth - 16
+					};
 
-				// 2. 挂载字段到this（对齐小程序端）
-				Object.assign(this, {
-					screen_width: systemInfo.screenWidth || 0,
-					screen_height: systemInfo.screenHeight || 0,
-					height_from_head: statusBarHeight,
-					head_height: headHeight,
-					...capsuleDefault // 挂载模拟的胶囊字段
-				});
+					Object.assign(this, {
+						screen_width: systemInfo.screenWidth || 0,
+						screen_height: systemInfo.screenHeight || 0,
+						height_from_head: statusBarHeight,
+						head_height: headHeight,
+						...capsuleDefault
+					});
 
-				// 3. 计算样式（和小程序端逻辑完全对齐）
-				const {
-					capsule_height,
-					capsule_top,
-					capsule_left,
-					capsule_distance_to_the_right,
-					capsule_width
-				} = this;
-				const capsuleBaseHeight = capsule_height + capsule_top + 10; // 基础高度（+10间距）
-				const capsuleBaseWidth = capsule_left - (capsule_distance_to_the_right * 2); // 基础宽度
-
-				// 4. 赋值样式（和小程序端字段完全一致）
-				this.headerStyle = {
-					height: `${Math.max(capsuleBaseHeight, navBarHeight)}px`, // 取最大值（保证不小于导航栏高度）
-					width: `${Math.max(capsuleBaseWidth, systemInfo.screenWidth - 40)}px` // 宽度兜底（屏幕宽度-40px）
-				};
-				this.headerContainerStyle = {
-					height: `${capsule_top + capsule_height}px` // 容器高度（模拟胶囊top+高度）
-				};
-				this.headerLeftStyle = {
-					height: `${capsule_height}px` // 左侧区域高度（模拟胶囊高度）
-				};
-				this.headerRightStyle = {
-					height: `${capsule_height - 2}px`, // 右侧区域高度（模拟胶囊高度-2px）
-					width: `${capsule_width}px` // 右侧区域宽度（模拟胶囊宽度）
-				};
+					this._calcHeaderStyle(systemInfo, navBarHeight);
+				} catch (error) {
+					console.error('Android系统信息初始化失败:', error);
+				}
 			},
-			// iOS app 系统信息初始化
-			initSystemIOS() {
-				const systemInfo = uni.getSystemInfoSync();
-				const statusBarHeight = systemInfo.statusBarHeight || 20;
-				const navBarHeight = 44;
-				const headHeight = statusBarHeight + navBarHeight;
-				const capsuleDefault = {
-					capsule_distance_to_the_right: 16,
-					capsule_top: statusBarHeight + 6,
-					capsule_left: systemInfo.screenWidth - 110,
-					capsule_width: 88,
-					capsule_height: 34,
-					capsule_bottom: statusBarHeight + 6 + 34,
-					capsule_right: systemInfo.screenWidth - 16
-				};
 
-				Object.assign(this, {
-					screen_width: systemInfo.screenWidth || 0,
-					screen_height: systemInfo.screenHeight || 0,
-					height_from_head: statusBarHeight,
-					head_height: headHeight,
-					...capsuleDefault
-				});
-				const {
-					capsule_height,
-					capsule_top,
-					capsule_left,
-					capsule_distance_to_the_right,
-					capsule_width
-				} = this;
+			/**
+			 * iOS app 系统信息初始化
+			 */
+			initSystemIOS() {
+				try {
+					const systemInfo = uni.getSystemInfoSync();
+					const statusBarHeight = systemInfo.statusBarHeight || 20;
+					const navBarHeight = 44;
+					const headHeight = statusBarHeight + navBarHeight;
+					
+					const capsuleDefault = {
+						capsule_distance_to_the_right: 16,
+						capsule_top: statusBarHeight + 6,
+						capsule_left: systemInfo.screenWidth - 110,
+						capsule_width: 88,
+						capsule_height: 34,
+						capsule_bottom: statusBarHeight + 6 + 34,
+						capsule_right: systemInfo.screenWidth - 16
+					};
+
+					Object.assign(this, {
+						screen_width: systemInfo.screenWidth || 0,
+						screen_height: systemInfo.screenHeight || 0,
+						height_from_head: statusBarHeight,
+						head_height: headHeight,
+						...capsuleDefault
+					});
+
+					this._calcHeaderStyle(systemInfo, navBarHeight);
+				} catch (error) {
+					console.error('iOS系统信息初始化失败:', error);
+				}
+			},
+
+			/**
+			 * 计算头部样式（复用逻辑）
+			 * @param {Object} systemInfo 系统信息
+			 * @param {number} navBarHeight 导航栏高度
+			 */
+			_calcHeaderStyle(systemInfo, navBarHeight) {
+				const { capsule_height, capsule_top, capsule_left, capsule_distance_to_the_right, capsule_width } = this;
 				const capsuleBaseHeight = capsule_height + capsule_top + 10;
 				const capsuleBaseWidth = capsule_left - (capsule_distance_to_the_right * 2);
+
 				this.headerStyle = {
 					height: `${Math.max(capsuleBaseHeight, navBarHeight)}px`,
 					width: `${Math.max(capsuleBaseWidth, systemInfo.screenWidth - 40)}px`
@@ -345,49 +360,57 @@
 					width: `${capsule_width}px`
 				};
 			},
-			// 判断当前设备参数
+
+			/**
+			 * 判断当前设备并初始化系统信息
+			 */
 			InitDetermineEquipment() {
-				const deviceInfo = deviceDetector.getDeviceInfo();
-				if (deviceInfo.isMiniProgram && deviceInfo.isWechatMini) { // 微信小程序
-					this.initSystemInfo();
-				} else if (deviceInfo.isApp && deviceInfo.isAndroid) { // 安卓APP
-					this.initSystemAndroid();
-				} else if (deviceInfo.isApp && deviceInfo.isIOS) { // iOS APP
-					this.initSystemIOS();
+				try {
+					const deviceInfo = deviceDetector.getDeviceInfo();
+					if (deviceInfo.isMiniProgram && deviceInfo.isWechatMini) {
+						this.initSystemInfo();
+					} else if (deviceInfo.isApp && deviceInfo.isAndroid) {
+						this.initSystemAndroid();
+					} else if (deviceInfo.isApp && deviceInfo.isIOS) {
+						this.initSystemIOS();
+					}
+				} catch (error) {
+					console.error('设备判断失败:', error);
 				}
 			},
-			// 安卓App权限检查（新增）
+
+			/**
+			 * 安卓App定位权限检查
+			 * @returns {Promise<boolean>} 是否有权限
+			 */
 			checkAndroidLocationPermission() {
 				return new Promise((resolve) => {
 					// #ifdef APP-PLUS
 					if (this.deviceInfo.isAndroid) {
-						const main = plus.android.runtimeMainActivity();
-						const Context = plus.android.importClass('android.content.Context');
-						const Activity = plus.android.importClass('android.app.Activity');
-						const Manifest = plus.android.importClass('android.Manifest');
-						const PermissionChecker = plus.android.importClass(
-							'android.content.pm.PackageManager');
+						try {
+							const main = plus.android.runtimeMainActivity();
+							const Manifest = plus.android.importClass('android.Manifest');
+							const PermissionChecker = plus.android.importClass('android.content.pm.PackageManager');
 
-						// 检查定位权限
-						const hasPermission = main.checkSelfPermission(Manifest.permission
-							.ACCESS_FINE_LOCATION) === PermissionChecker.PERMISSION_GRANTED;
+							const hasPermission = main.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) === PermissionChecker.PERMISSION_GRANTED;
+							
+							if (hasPermission) {
+								resolve(true);
+								return;
+							}
 
-						if (hasPermission) {
-							resolve(true);
-						} else {
 							// 申请权限
 							main.requestPermissions([Manifest.permission.ACCESS_FINE_LOCATION], 1001);
-							// 监听权限申请结果
-							const onRequestPermissionsResult = (requestCode, permissions,
-								grantResults) => {
+							main.onRequestPermissionsResult = (requestCode, permissions, grantResults) => {
 								if (requestCode === 1001) {
 									resolve(grantResults[0] === PermissionChecker.PERMISSION_GRANTED);
 								}
 							};
-							main.onRequestPermissionsResult = onRequestPermissionsResult;
+						} catch (error) {
+							console.error('Android权限检查失败:', error);
+							resolve(false);
 						}
-					} else if (this.deviceInfo.isIOS) {
-						// iOS App直接调用getLocation，系统会自动弹权限申请
+					} else {
 						resolve(true);
 					}
 					// #endif
@@ -396,505 +419,427 @@
 					// #endif
 				});
 			},
-			// 获取当前位置（重构：兼容小程序/安卓/iOS App）
-			async InitgetCurrentLocation(options) {
-				const getLoc = () => {
-					return new Promise((resolve, reject) => {
-						uni.getLocation({
-							type: 'gcj02',
-							success: (loc) => {
-								this.InitSharingCode(options, loc);
-								resolve(loc);
-							},
-							fail: (err) => {
-								const errMsg = err.errMsg.includes('auth') ?
-									'位置权限已拒绝，请前往设置开启' : '获取位置失败';
-								uni.showToast({
-									title: errMsg,
-									icon: 'none'
-								});
-								reject(err);
-							}
+
+			/**
+			 * 获取当前位置（兼容多平台）
+			 * @param {Object} options 页面参数
+			 */
+			async InitgetCurrentLocation(options = {}) {
+				const getLoc = async () => {
+					try {
+						const loc = await new Promise((resolve, reject) => {
+							uni.getLocation({
+								type: 'gcj02',
+								success: resolve,
+								fail: reject
+							});
 						});
-					});
+						await this.InitSharingCode(options, loc);
+						return loc;
+					} catch (err) {
+						const errMsg = err.errMsg?.includes('auth') 
+							? '位置权限已拒绝，请前往设置开启' 
+							: '获取位置失败';
+						this.$showToast(errMsg);
+						throw err;
+					}
 				};
 
 				try {
-					// 区分不同平台处理权限
 					if (this.deviceInfo.isMiniProgram && this.deviceInfo.isWechatMini) {
-						// 小程序端：使用uni.getSetting
-						uni.getSetting({
-							success: ({
-								authSetting
-							}) => {
-								if (authSetting['scope.userLocation']) {
-									getLoc();
-								} else {
-									uni.authorize({
-										scope: 'scope.userLocation',
-										success: getLoc,
-										fail: () => {
-											uni.showModal({
-												title: '权限提示',
-												content: '需开启位置权限才能使用地图功能',
-												confirmText: '去设置',
-												success: (r) => {
-													if (r.confirm) {
-														uni.openSetting();
-													}
-												}
-											});
-										}
-									});
-								}
-							}
+						const authSetting = await new Promise(resolve => {
+							uni.getSetting({ success: res => resolve(res.authSetting) });
 						});
-					} else if (this.deviceInfo.isApp) {
-						// App端：安卓/iOS权限处理
-						if (this.deviceInfo.isAndroid) {
-							const hasPermission = await this.checkAndroidLocationPermission();
-							if (hasPermission) {
-								getLoc();
-							} else {
-								uni.showModal({
-									title: '权限提示',
-									content: '需开启位置权限才能使用地图功能，请前往设置开启',
-									confirmText: '去设置',
-									success: (res) => {
-										if (res.confirm) {
-											// #ifdef APP-PLUS
-											plus.runtime.openURL('app-settings:');
-											// #endif
-										}
+
+						if (authSetting['scope.userLocation']) {
+							await getLoc();
+						} else {
+							await new Promise((resolve, reject) => {
+								uni.authorize({
+									scope: 'scope.userLocation',
+									success: resolve,
+									fail: () => {
+										uni.showModal({
+											title: '权限提示',
+											content: '需开启位置权限才能使用地图功能',
+											confirmText: '去设置',
+											success: (r) => {
+												if (r.confirm) uni.openSetting();
+												reject(new Error('用户拒绝授权'));
+											}
+										});
 									}
 								});
-							}
-						} else {
-							// iOS App直接获取位置（系统自动弹权限）
-							getLoc();
+							});
+							await getLoc();
 						}
+					} else if (this.deviceInfo.isApp) {
+						if (this.deviceInfo.isAndroid) {
+							const hasPermission = await this.checkAndroidLocationPermission();
+							if (!hasPermission) {
+								await new Promise(resolve => {
+									uni.showModal({
+										title: '权限提示',
+										content: '需开启位置权限才能使用地图功能，请前往设置开启',
+										confirmText: '去设置',
+										success: (res) => {
+											if (res.confirm) plus.runtime.openURL('app-settings:');
+											resolve();
+										}
+									});
+								});
+								return;
+							}
+						}
+						await getLoc();
 					} else {
-						// 其他平台直接获取
-						getLoc();
+						await getLoc();
 					}
-				} catch (err) {
-					console.error('获取位置权限失败：', err);
-					uni.showToast({
-						title: '获取位置权限失败',
-						icon: 'none'
-					});
+				} catch (error) {
+					console.error('获取位置失败:', error);
 				}
 			},
-			// 获取控车码并设置缓存,然后执行其他地图操作			
+
+			/**
+			 * 获取控车码并设置缓存
+			 * @param {Object} evt 页面参数
+			 * @param {Object} loc 位置信息
+			 */
 			async InitSharingCode(evt = {}, loc = {}) {
-				let finalShareCode = evt.scene || evt.query || '';
-				// 标记是否触发经纬度赋值（默认触发，满足条件则置为false）
-				let needSetLocation = true;
+				try {
+					let finalShareCode = evt.scene || evt.query || '';
+					let needSetLocation = true;
 
-				if (!finalShareCode) {
-					const {
-						token = '', mobile = ''
-					} = uni.getStorageSync('userKey') ?? {};
-					if (token) {
-						try {
-							const {
-								code,
-								content
-							} = await u_getControlCodeByMobile({
-								mobile
-							}) || {};
-							if (code === 1000 && content) {
-								needSetLocation = false; // 满足条件，不触发经纬度赋值
-								let targetCar = null;
+					if (!finalShareCode) {
+						const { token = '', mobile = '' } = uni.getStorageSync('userKey') ?? {};
+						if (token) {
+							try {
+								const { code, content } = await u_getControlCodeByMobile({ mobile }) || {};
+								if (code === 1000 && content) {
+									needSetLocation = false;
+									let targetCar = null;
 
-								// 多车辆则选择，单车辆则取第一个
-								if (Array.isArray(content) && content.length > 1) {
-									while (!targetCar) {
-										try {
-											const {
-												tapIndex
-											} = await uni.showActionSheet({
-												itemList: content.map(car =>
-													`${car.vehicleSerialName || ''}${car.vehicleModeName || ''}(${car.platenumber || '未上牌'})`
-												),
-												showCancel: false,
-												mask: true
-											});
-											targetCar = content[tapIndex];
-										} catch (error) {
-											uni.showToast({
-												title: '请选择一辆车辆',
-												icon: 'none',
-												duration: 1500
-											});
+									if (Array.isArray(content) && content.length > 1) {
+										while (!targetCar) {
+											try {
+												const { tapIndex } = await uni.showActionSheet({
+													itemList: content.map(car => 
+														`${car.vehicleSerialName || ''}${car.vehicleModeName || ''}(${car.platenumber || '未上牌'})`
+													),
+													showCancel: false,
+													mask: true
+												});
+												targetCar = content[tapIndex];
+											} catch (error) {
+												this.$showToast('请选择一辆车辆', 'none', 1500);
+											}
 										}
+									} else {
+										targetCar = Array.isArray(content) ? content[0] : content;
 									}
-								} else {
-									targetCar = Array.isArray(content) ? content[0] : content;
+									finalShareCode = targetCar?.controlcode || uni.getStorageSync('scene') || '';
 								}
-								finalShareCode = targetCar?.controlcode || uni.getStorageSync('scene') || '';
+							} catch (err) {
+								console.error('接口获取分享码失败，降级缓存：', err);
+								finalShareCode = uni.getStorageSync('scene') || '';
 							}
-						} catch (err) {
-							console.error('接口获取分享码失败，降级缓存：', err);
+						} else {
 							finalShareCode = uni.getStorageSync('scene') || '';
 						}
 					} else {
-						finalShareCode = uni.getStorageSync('scene') || '';
+						needSetLocation = false;
 					}
-				} else {
-					needSetLocation = false; // 有初始分享码，不触发经纬度赋值
-				}
 
-				// 处理有效分享码
-				if (finalShareCode) {
-					try {
+					if (finalShareCode) {
 						this.shareCode = finalShareCode;
 						this.handleSearchLink(finalShareCode);
 						uni.setStorageSync('scene', finalShareCode);
-					} catch (err) {
-						console.error('处理分享码失败：', err);
+					} else if (needSetLocation && loc.latitude && loc.longitude) {
+						this.latitude = loc.latitude;
+						this.longitude = loc.longitude;
 					}
-				}
-				// 所有条件不满足时，赋值经纬度（修复longitude拼写错误）
-				else if (needSetLocation && loc.latitude && loc.longitude) {
-					this.latitude = loc.latitude;
-					this.longitude = loc.longitude;
+				} catch (error) {
+					console.error('处理分享码失败:', error);
 				}
 			},
-			// 获取车辆位置
-			handleSearchLink(evt) {
-				u_getCarPoisitonByCode({
-					code: evt
-				}).then(res => {
-					if (res?.code !== 1000) return;
-					const i = res.content || {};
-					// 保存租车公司信息（用于联系电话）
-					this.rentCompany = i.rentCompany || {};
-					Object.assign(this, {
-						...i,
-						current_latitude: i.latitude,
-						current_longitude: i.longitude,
-						latitude: i.latitude,
-						longitude: i.longitude,
-						g_images: [
-							i?.uploadImgUrl,
-							i?.uploadImgUrlFive,
-							i?.uploadImgUrlFour,
-							i?.uploadImgUrlThree,
-							i?.uploadImgUrlTwo
-						],
-						markers: [{
+
+			/**
+			 * 获取车辆位置
+			 * @param {string} code 分享码
+			 */
+			handleSearchLink(code) {
+				u_getCarPoisitonByCode({ code })
+					.then(res => {
+						if (res?.code !== 1000) return;
+						
+						const carData = res.content || {};
+						this.rentCompany = carData.rentCompany || {};
+						
+						// 解构赋值简化代码
+						const { 
+							latitude, longitude, plateNumber, address, showtime,
+							uploadImgUrl, uploadImgUrlFive, uploadImgUrlFour,
+							uploadImgUrlThree, uploadImgUrlTwo, sn, idc, blueKey, deviceType
+						} = carData;
+
+						// 赋值业务数据
+						Object.assign(this, {
+							...carData,
+							current_latitude: latitude,
+							current_longitude: longitude,
+							latitude,
+							longitude,
+							sn,
+							idc,
+							blueKey,
+							deviceType,
+							g_images: [uploadImgUrl, uploadImgUrlFive, uploadImgUrlFour, uploadImgUrlThree, uploadImgUrlTwo]
+						});
+
+						// 设置地图标记
+						this.markers = [{
 							id: 1,
-							latitude: i.latitude,
-							longitude: i.longitude,
-							title: i.plateNumber,
+							latitude,
+							longitude,
+							title: plateNumber,
 							iconPath: '/static/images/car_icon.png',
 							width: 20,
 							height: 43,
 							callout: {
-								content: `${i.plateNumber || ''}
-			          当前位置：${i.address || '未知'}
-			          定位时间：${i.showtime || '未知'}`,
+								content: `${plateNumber || ''}\n当前位置：${address || '未知'}\n定位时间：${showtime || '未知'}`,
 								display: 'ALWAYS',
 								padding: 8
 							}
-						}]
-					});
-				});
+						}];
+					})
+					.catch(err => console.error('获取车辆位置失败:', err));
 			},
-			// 切换网络/蓝牙模式
-			handleControl(evt) {
-				const control_id = Number(evt);
-				if (control_id === this.currentMode) return;
-				const showToastAndSetData = (message, newControlType) => {
-					uni.showToast({
-						title: message,
-						icon: 'none',
-						duration: 2000
-					});
-					this.currentMode = newControlType;
-				};
-				switch (control_id) {
-					case -4:
-						showToastAndSetData('已经切换成网络控车模式', control_id);
-						bleManager.releaseBle();
-						break;
-					case -5:
-						showToastAndSetData('已经切换成蓝牙控车模式', control_id);
-						break;
-					default:
-						break;
+
+			/**
+			 * 切换网络/蓝牙模式
+			 * @param {number} mode 模式类型
+			 */
+			handleControl(mode) {
+				if (mode === this.currentMode) return;
+
+				this.currentMode = mode;
+				
+				if (mode === MODE_TYPES.NETWORK) {
+					this.$showToast('已经切换成网络控车模式');
+					bleManager.releaseBle();
+				} else if (mode === MODE_TYPES.BLUETOOTH) {
+					this.$showToast('已经切换成蓝牙控车模式');
 				}
 			},
-			// 开锁、关锁、寻车核心逻辑（精简版）
-			handleFooterBtn(evt) {
+
+			/**
+			 * 车辆控制核心逻辑（开锁/关锁/寻车）
+			 * @param {number} type 控制类型
+			 */
+			handleFooterBtn(type) {
 				if (!this.shareCode) {
-					uni.showToast({
-						title: '无可用车辆',
-						icon: 'none',
-						duration: 2000
-					});
-					return
+					this.$showToast('无可用车辆');
+					return;
 				}
-				// 增加标识，记录loading是否成功显示
-				let loadingShowed = false;
-				const safeLoading = {
-					show: () => {
+
+				// 安全的loading管理
+				const loading = {
+					showed: false,
+					show() {
 						try {
-							uni.showLoading({
-								title: '正在控制...',
-								mask: true
-							});
-							loadingShowed = true;
-							return true;
+							uni.showLoading({ title: '正在控制...', mask: true });
+							this.showed = true;
 						} catch (e) {
 							console.warn('显示加载失败:', e);
-							loadingShowed = false;
-							return false;
 						}
 					},
-					hide: () => {
-						if (loadingShowed) {
+					hide() {
+						if (this.showed) {
 							try {
 								uni.hideLoading();
 							} catch (e) {
 								console.warn('隐藏加载失败:', e);
 							} finally {
-								loadingShowed = false;
+								this.showed = false;
 							}
 						}
 					}
 				};
 
-				const showErrorToast = (msg) => uni.showToast({
-					title: msg || '控制请求异常',
-					icon: 'none',
-					duration: 2000
-				});
+				loading.show();
 
-				const handleCore = () => {
-					if (!safeLoading.show()) return;
+				if (!this.sn) {
+					this.$showToast('未找到有效设备标识');
+					loading.hide();
+					return;
+				}
 
-					if (!this.sn) {
-						showErrorToast('未找到有效设备标识');
-						safeLoading.hide();
-						return;
-					}
+				const { currentMode: controlType } = this;
 
-					const {
-						currentMode: controlType
-					} = this;
+				// 蓝牙模式
+				if (controlType === MODE_TYPES.BLUETOOTH) {
+					uni.showModal({
+						title: '温馨提示',
+						content: '蓝牙模式响应存在轻微延迟，为确保正常使用，请勿快速重复操作。',
+						showCancel: false,
+						success: () => this.handleExecuteBluetooth(type)
+					});
+					loading.hide();
+					return;
+				}
 
-					if (controlType === -5) {
-						uni.showModal({
-							title: '温馨提示',
-							content: '蓝牙模式响应存在轻微延迟，为确保正常使用，请勿快速重复操作。',
-							showCancel: false,
-							success: (res) => {
-								if (res.confirm) {
-									this.handleExecuteBluetooth(evt);
-								}
+				// 网络模式
+				if (controlType === MODE_TYPES.NETWORK) {
+					u_operation({ operationType: type, sn: this.sn })
+						.then(res => {
+							loading.hide();
+							if (res?.code === 1000) {
+								const successMsg = type === BTN_TYPES.FIND_CAR 
+									? '寻车成功，请注意附近鸣笛车辆!' 
+									: '控制成功!';
+								this.$showToast(successMsg);
+							} else {
+								this.$showToast(res?.msg || '请求失败');
 							}
 						})
-						safeLoading.hide();
-						return;
-					}
-
-					if (controlType === -4) {
-						const requestParams = {
-							operationType: evt,
-							sn: this.sn
-						};
-
-						u_operation(requestParams)
-							.then(res => {
-								safeLoading.hide();
-								if (res?.code === 1000) {
-									const successMsg = requestParams.operationType === 5 ?
-										'寻车成功，请注意附近鸣笛车辆!' :
-										'控制成功!';
-									uni.showToast({
-										title: successMsg,
-										icon: 'none'
-									});
-								} else {
-									showErrorToast(res?.msg || '请求失败');
-								}
-							})
-							.catch(err => {
-								safeLoading.hide();
-								showErrorToast(err.message || '网络请求异常');
-							});
-					} else {
-						safeLoading.hide();
-					}
-				};
-
-				handleCore();
+						.catch(err => {
+							loading.hide();
+							this.$showToast(err.message || '网络请求异常');
+						});
+				} else {
+					loading.hide();
+				}
 			},
-			// 蓝牙控制车辆
+
+			/**
+			 * 蓝牙控制车辆
+			 * @param {number} type 控制类型
+			 */
 			handleExecuteBluetooth(type) {
+				// 指令映射表
 				const COMMAND_MAPPING = {
-					5: 5, // 远程寻车
-					1: (this?.deviceType == 'F1' || this?.deviceType == 'F0') ? 4 : 3, // 锁门
-					3: this?.deviceType == 'F1' ? 1 : 2, // 开门
+					[BTN_TYPES.FIND_CAR]: 5,
+					[BTN_TYPES.LOCK]: (this.deviceType === 'F1' || this.deviceType === 'F0') ? 4 : 3,
+					[BTN_TYPES.UNLOCK]: this.deviceType === 'F1' ? 1 : 2
 				};
 
-				const BLUETOOTH_HANDLERS = {
-					[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_PRE_EXECUTE]: () => {
-						uni.showLoading({
-							title: '指令执行中...',
-							icon: 'none'
-						});
-					},
-					[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_ERROR]: () => {
-						uni.hideLoading();
-					},
-					[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_ADAPTER_UNAVAILABLE]: () => {
-						uni.showToast({
-							title: '请打开蓝牙',
-							icon: 'none'
-						});
-						uni.hideLoading();
-					},
-					[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_NOT_FOUND]: () => {
-						uni.hideLoading();
-					},
-					[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_CONNECT_FAILED]: () => {
-						uni.showToast({
-							title: '蓝牙连接失败，请重试!',
-							icon: 'none'
-						});
-						uni.hideLoading();
-					},
-					[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_UNSUPPORTED]: () => {
-						uni.showToast({
-							title: '您的手机不支持低功耗蓝牙',
-							icon: 'none'
-						});
-						uni.hideLoading();
-					},
-					[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_SEND_FAILED]: () => {
-						uni.showToast({
-							title: '数据发送失败，请重试!',
-							icon: 'none'
-						});
-						uni.hideLoading();
-					},
-					[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_NO_RESPONSE]: () => {
-						uni.showToast({
-							title: '设备超时无响应，请重试!',
-							icon: 'none'
-						});
-						uni.hideLoading();
+				// 蓝牙状态处理器
+				const bluetoothHandler = (state) => {
+					const handlers = {
+						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_PRE_EXECUTE]: () => {
+							uni.showLoading({ title: '指令执行中...', icon: 'none' });
+						},
+						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_ERROR]: uni.hideLoading,
+						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_ADAPTER_UNAVAILABLE]: () => {
+							uni.hideLoading();
+							this.$showToast('请打开蓝牙');
+						},
+						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_NOT_FOUND]: uni.hideLoading,
+						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_CONNECT_FAILED]: () => {
+							uni.hideLoading();
+							this.$showToast('蓝牙连接失败，请重试!');
+						},
+						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_UNSUPPORTED]: () => {
+							uni.hideLoading();
+							this.$showToast('您的手机不支持低功耗蓝牙');
+						},
+						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_SEND_FAILED]: () => {
+							uni.hideLoading();
+							this.$showToast('数据发送失败，请重试!');
+						},
+						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_NO_RESPONSE]: () => {
+							uni.hideLoading();
+							this.$showToast('设备超时无响应，请重试!');
+						}
+					};
+					handlers[state]?.();
+				};
+
+				// 指令回调处理
+				const commandCallback = (data) => {
+					uni.hideLoading();
+					if (data.controlType === 4) {
+						this.$showToast(data.result);
+						if (data.result.includes('控制成功')) {
+							// 上传服务器逻辑
+						}
 					}
 				};
 
 				try {
-					if (!COMMAND_MAPPING.hasOwnProperty(type)) return;
 					const command = COMMAND_MAPPING[type];
-					if (type == 5) {
-						bleManager.sendData(
-							this.idc || `19${this.sn}`,
-							this.blueKey,
-							command,
-							state => BLUETOOTH_HANDLERS[state]?.(),
-							data => {
-								uni.hideLoading();
-								if (data.controlType === 4) {
-									uni.showToast({
-										title: data.result,
-										icon: 'none'
-									});
-									if (data.result.includes("控制成功")) {
-										// 上传服务器逻辑
-									}
-								}
-							}
-						);
-						return;
-					}
+					if (typeof command === 'undefined') return;
 
-					if ([1, 3].includes(type)) {
-						bleManager.sendData(this.idc || `19${this.sn}`, this.blueKey, command, state =>
-							BLUETOOTH_HANDLERS[state]?.(), data => {
-								uni.hideLoading();
-								if (data.controlType === 4) {
-									uni.showToast({
-										title: data.result,
-										icon: 'none'
-									});
-									if (data.result.includes("控制成功")) {
-										// 上传服务器逻辑
-									}
-								}
-							});
-					}
-				} finally {
-					// 统一清理
+					const deviceId = this.idc || `19${this.sn}`;
+					bleManager.sendData(deviceId, this.blueKey, command, bluetoothHandler, commandCallback);
+				} catch (error) {
+					console.error('蓝牙指令发送失败:', error);
+					uni.hideLoading();
+					this.$showToast('蓝牙控制失败，请重试');
 				}
 			},
-			// 归还车辆
+
+			/**
+			 * 归还车辆
+			 */
 			handleReturningVehicles() {
 				if (!this.shareCode) {
-					uni.showToast({
-						title: '无可用车辆',
-						icon: 'none',
-						duration: 2000
-					});
-					return
+					this.$showToast('无可用车辆');
+					return;
 				}
 				uni.navigateTo({
 					url: `/pages/returnPhotos/index?code=${this.shareCode}`
-				})
+				});
 			},
-			// 查看照片
+
+			/**
+			 * 查看车辆照片
+			 */
 			handleViewPhotos() {
 				if (!this.shareCode) {
-					uni.showToast({
-						title: '无可用车辆',
-						icon: 'none',
-						duration: 2000
-					});
-					return
+					this.$showToast('无可用车辆');
+					return;
 				}
 
-				const images = this.g_images.map(ele => {
-					if (!ele) return '';
-					let temp = this.c_fin3_link + ele.replace(/\\/g, "/")
-					return temp
-				}).filter(Boolean); // 过滤空链接
+				// 处理图片链接并过滤空值
+				const images = this.g_images
+					.filter(Boolean)
+					.map(ele => `${this.c_fin3_link}${ele.replace(/\\/g, "/")}`);
 
 				if (images.length === 0) {
-					uni.showToast({
-						title: '暂无照片可查看',
-						icon: 'none'
-					});
+					this.$showToast('暂无照片可查看');
 					return;
 				}
 
 				uni.previewImage({
 					urls: images,
 					fail: (err) => {
-						console.error('图片预览失败：', err)
-						uni.showToast({
-							title: '图片预览失败',
-							icon: 'none'
-						})
+						console.error('图片预览失败：', err);
+						this.$showToast('图片预览失败');
 					}
 				});
 			},
-			// 滑动地图实施改变中心位置
+
+			/**
+			 * 地图区域变化监听
+			 * @param {Object} evt 事件对象
+			 */
 			handleOnMapRegionChange(evt) {
-				const {
-					latitude = this.latitude, longitude = this.longitude
-				} = evt?.detail?.centerLocation || {};
-				if (latitude && longitude && (latitude !== this.latitude || longitude !== this.longitude)) {
-					this.latitude = latitude;
-					this.longitude = longitude;
+				try {
+					const { latitude, longitude } = evt?.detail?.centerLocation || {};
+					if (latitude && longitude && (latitude !== this.latitude || longitude !== this.longitude)) {
+						this.latitude = latitude;
+						this.longitude = longitude;
+					}
+				} catch (error) {
+					console.error('地图区域变化处理失败:', error);
 				}
 			},
-			// 定位到当前位置
+
+			/**
+			 * 定位到当前位置
+			 * @returns {Promise} 定位结果
+			 */
 			handleCenterLocation() {
 				return new Promise((resolve, reject) => {
 					uni.getLocation({
@@ -902,31 +847,24 @@
 						success: (res) => {
 							this.latitude = res.latitude;
 							this.longitude = res.longitude;
-							uni.showToast({
-								title: '已定位到当前位置',
-								icon: 'none'
-							});
+							this.$showToast('已定位到当前位置');
 							resolve(res);
 						},
 						fail: (err) => {
-							const errMsg = '定位失败：' + err.errMsg;
-							uni.showToast({
-								title: errMsg,
-								icon: 'none'
-							});
+							const errMsg = `定位失败：${err.errMsg}`;
+							this.$showToast(errMsg);
 							reject(new Error(errMsg));
 						}
 					});
 				});
 			},
-			// 导航到车辆位置-打开外部地图
+
+			/**
+			 * 导航到车辆位置
+			 */
 			async handleRoutePlan() {
 				if (!this.shareCode) {
-					uni.showToast({
-						title: '无可用车辆',
-						icon: 'none',
-						duration: 2000
-					});
+					this.$showToast('无可用车辆');
 					return;
 				}
 
@@ -936,10 +874,7 @@
 					const longitude = Number(this.current_longitude);
 
 					if (!latitude || !longitude) {
-						uni.showToast({
-							title: '暂无车辆位置信息',
-							icon: 'none'
-						});
+						this.$showToast('暂无车辆位置信息');
 						return;
 					}
 
@@ -949,32 +884,27 @@
 						scale: 18,
 						fail: (err) => {
 							console.error('打开位置失败', err);
-							uni.showToast({
-								title: '导航失败，请检查定位权限',
-								icon: 'none',
-								duration: 3000
-							});
+							this.$showToast('导航失败，请检查定位权限', 'none', 3000);
 						}
 					});
 				} catch (error) {
-					console.error('定位异常', error);
+					console.error('导航异常:', error);
 				}
 			},
-			// 跳转登录页面or个人中心页面
-			handleLogin() {
-				const config = this.login_status ? {
-					method: 'navigateTo',
-					url: '/pages/userCenter/index'
-				} : {
-					method: 'redirectTo',
-					url: '/pages/login/index'
-				};
 
-				uni[config.method]({
-					url: config.url
-				});
+			/**
+			 * 处理登录/个人中心跳转
+			 */
+			handleLogin() {
+				const navMethod = this.login_status ? 'navigateTo' : 'redirectTo';
+				const url = this.login_status ? '/pages/userCenter/index' : '/pages/login/index';
+				
+				uni[navMethod]({ url });
 			},
-			// 判断当前页面登录状态
+
+			/**
+			 * 初始化登录状态
+			 */
 			initLoginState() {
 				uni.getStorage({
 					key: 'userKey',
@@ -986,7 +916,11 @@
 					}
 				});
 			},
-			// 地图点击事件
+
+			/**
+			 * 地图点击事件
+			 * @param {Object} e 事件对象
+			 */
 			handleMapClick(e) {
 				console.log('地图点击坐标：', e.detail.longitude, e.detail.latitude);
 			}
@@ -1008,7 +942,7 @@
 		background: linear-gradient(to bottom, #e6f4ff, #FFFFFF);
 	}
 
-	/* 头部导航栏（沉浸式+渐变） */
+	/* 头部导航栏 */
 	.header {
 		display: flex;
 		padding-left: 7px;
@@ -1037,9 +971,8 @@
 
 	.header-title {
 		color: #333;
-		font-weight: bold;
-		font-size: 20px;
 		font-weight: 600;
+		font-size: 20px;
 	}
 
 	.header-icon {
@@ -1058,7 +991,7 @@
 		height: 100%;
 	}
 
-	/* 左上角控件（图片版+上下排列） */
+	/* 左上角控件 */
 	.top-left-controls {
 		position: absolute;
 		top: 16px;
@@ -1066,7 +999,7 @@
 		z-index: 999;
 	}
 
-	/* 右上角联系我们电话图标 */
+	/* 右上角联系我们 */
 	.top-right-controls {
 		position: absolute;
 		top: 16px;
@@ -1173,7 +1106,7 @@
 		height: 32px;
 	}
 
-	/* 底部控制栏（5个按钮） */
+	/* 底部控制栏 */
 	.bottom-controls {
 		padding: 10px 5px;
 		position: relative;
@@ -1218,7 +1151,6 @@
 		margin-bottom: 4px;
 	}
 
-	/* 主按钮图片适配白色 */
 	.control-btn.primary .btn-img {
 		filter: invert(1);
 	}
@@ -1229,7 +1161,7 @@
 		text-align: center;
 	}
 
-	/* 适配深色模式 */
+	/* 深色模式适配 */
 	@media (prefers-color-scheme: dark) {
 		.control-card {
 			background: rgba(30, 30, 30, 0.92);
