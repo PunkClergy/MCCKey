@@ -117,7 +117,7 @@
 		LOCK: 1,
 		FIND_CAR: 5
 	};
-	const DEFAULT_CONTACT_PHONE = '400-123-4567';
+	const DEFAULT_CONTACT_PHONE = '400-090-5050';
 	const MAP_SCALE_DEFAULT = 16;
 
 	export default {
