@@ -122,26 +122,41 @@
 				// 当前登录状态
 				login_status: false,
 				c_fin3_link: 'https://fin3.wiselink.net.cn/fin/',
-				// 联系电话改）
-				contactPhone: '400-123-4567'
+				// 联系电话
+				contactPhone: '400-123-4567',
+				// 新增：设备信息缓存
+				deviceInfo: {},
+				// 新增：分享码
+				shareCode: '',
+				// 新增：租车公司信息
+				rentCompany: {},
+				// 新增：图片链接列表
+				g_images: []
 			};
 		},
 		async onLoad(options) {
+			// 获取设备信息
+			this.deviceInfo = deviceDetector.getDeviceInfo();
 			// 获取当前位置+验证控车
 			await this.InitgetCurrentLocation(options);
-
 		},
 		onShow() {
+			console.log(this.latitude)
 			// 获取登录状态
 			this.initLoginState()
 			// 设备信息获取
 			this.InitDetermineEquipment()
-
+			if (!(this.latitude || this.longitude)) {
+				this.InitgetCurrentLocation()
+			}
 		},
 		methods: {
 			// 拨打咨询电话方法
 			makePhoneCall() {
-				if (!this.rentCompany?.contactstel) {
+				// 优先使用租车公司电话，无则使用默认电话
+				const phoneNumber = this.rentCompany?.contactstel || this.contactPhone;
+
+				if (!phoneNumber) {
 					uni.showToast({
 						title: '暂无联系电话',
 						icon: 'none',
@@ -152,13 +167,13 @@
 
 				uni.showModal({
 					title: '拨打电话',
-					content: `是否拨打电话：${this.rentCompany?.contactstel}`,
+					content: `是否拨打电话：${phoneNumber}`,
 					confirmText: '拨打',
 					cancelText: '取消',
 					success: (res) => {
 						if (res.confirm) {
 							uni.makePhoneCall({
-								phoneNumber: this.rentCompany?.contactstel,
+								phoneNumber: phoneNumber,
 								fail: (err) => {
 									console.error('拨打电话失败：', err);
 									uni.showToast({
@@ -172,7 +187,7 @@
 					}
 				});
 			},
-			// WEIXIN
+			// 微信小程序系统信息初始化
 			initSystemInfo() {
 				const systemInfo = uni.getSystemInfoSync();
 				const statusBarHeight = systemInfo.statusBarHeight || 0;
@@ -229,10 +244,10 @@
 					width: `${this.capsule_width}px`
 				}
 			},
-			// Android app
+			// Android app 系统信息初始化
 			initSystemAndroid() {
 				const systemInfo = uni.getSystemInfoSync();
-				// ========== 1. 定义App端核心参数（对齐小程序端字段结构） ==========
+				// 1. 定义App端核心参数（对齐小程序端字段结构）
 				const statusBarHeight = systemInfo.statusBarHeight || 0; // 状态栏高度
 				const navBarHeight = 48; // Android App导航栏标准高度（可根据UI设计调整）
 				const headHeight = statusBarHeight + navBarHeight; // 头部总高度（状态栏+导航栏）
@@ -247,7 +262,7 @@
 					capsule_right: systemInfo.screenWidth - 16 // 模拟胶囊right值
 				};
 
-				// ========== 2. 挂载字段到this（对齐小程序端） ==========
+				// 2. 挂载字段到this（对齐小程序端）
 				Object.assign(this, {
 					screen_width: systemInfo.screenWidth || 0,
 					screen_height: systemInfo.screenHeight || 0,
@@ -256,18 +271,18 @@
 					...capsuleDefault // 挂载模拟的胶囊字段
 				});
 
-				// ========== 3. 计算样式（和小程序端逻辑完全对齐） ==========
+				// 3. 计算样式（和小程序端逻辑完全对齐）
 				const {
 					capsule_height,
 					capsule_top,
 					capsule_left,
 					capsule_distance_to_the_right,
-					capsule_width // 新增这一行
+					capsule_width
 				} = this;
 				const capsuleBaseHeight = capsule_height + capsule_top + 10; // 基础高度（+10间距）
 				const capsuleBaseWidth = capsule_left - (capsule_distance_to_the_right * 2); // 基础宽度
 
-				// ========== 4. 赋值样式（和小程序端字段完全一致） ==========
+				// 4. 赋值样式（和小程序端字段完全一致）
 				this.headerStyle = {
 					height: `${Math.max(capsuleBaseHeight, navBarHeight)}px`, // 取最大值（保证不小于导航栏高度）
 					width: `${Math.max(capsuleBaseWidth, systemInfo.screenWidth - 40)}px` // 宽度兜底（屏幕宽度-40px）
@@ -283,7 +298,7 @@
 					width: `${capsule_width}px` // 右侧区域宽度（模拟胶囊宽度）
 				};
 			},
-			// iOS app 
+			// iOS app 系统信息初始化
 			initSystemIOS() {
 				const systemInfo = uni.getSystemInfoSync();
 				const statusBarHeight = systemInfo.statusBarHeight || 20;
@@ -341,34 +356,134 @@
 					this.initSystemIOS();
 				}
 			},
-			// 获取当前位置并直接输出
-			InitgetCurrentLocation(options) {
-				const getLoc = () => uni.getLocation({
-					type: 'gcj02',
-					success: loc => this.InitSharingCode(options, loc),
-					fail: err => uni.showToast({
-						title: err.errMsg.includes('auth') ? '权限已拒绝' : '获取位置失败',
-						icon: 'none'
-					})
-				});
+			// 安卓App权限检查（新增）
+			checkAndroidLocationPermission() {
+				return new Promise((resolve) => {
+					// #ifdef APP-PLUS
+					if (this.deviceInfo.isAndroid) {
+						const main = plus.android.runtimeMainActivity();
+						const Context = plus.android.importClass('android.content.Context');
+						const Activity = plus.android.importClass('android.app.Activity');
+						const Manifest = plus.android.importClass('android.Manifest');
+						const PermissionChecker = plus.android.importClass(
+							'android.content.pm.PackageManager');
 
-				uni.getSetting({
-					success: ({
-						authSetting
-					}) => {
-						if (authSetting['scope.userLocation']) return getLoc();
-						uni.authorize({
-							scope: 'scope.userLocation',
-							success: getLoc,
-							fail: () => uni.showModal({
-								title: '权限提示',
-								content: '需开启位置权限',
-								confirmText: '去设置',
-								success: r => r.confirm && uni.openSetting()
-							})
-						});
+						// 检查定位权限
+						const hasPermission = main.checkSelfPermission(Manifest.permission
+							.ACCESS_FINE_LOCATION) === PermissionChecker.PERMISSION_GRANTED;
+
+						if (hasPermission) {
+							resolve(true);
+						} else {
+							// 申请权限
+							main.requestPermissions([Manifest.permission.ACCESS_FINE_LOCATION], 1001);
+							// 监听权限申请结果
+							const onRequestPermissionsResult = (requestCode, permissions,
+								grantResults) => {
+								if (requestCode === 1001) {
+									resolve(grantResults[0] === PermissionChecker.PERMISSION_GRANTED);
+								}
+							};
+							main.onRequestPermissionsResult = onRequestPermissionsResult;
+						}
+					} else if (this.deviceInfo.isIOS) {
+						// iOS App直接调用getLocation，系统会自动弹权限申请
+						resolve(true);
 					}
+					// #endif
+					// #ifndef APP-PLUS
+					resolve(true);
+					// #endif
 				});
+			},
+			// 获取当前位置（重构：兼容小程序/安卓/iOS App）
+			async InitgetCurrentLocation(options) {
+				const getLoc = () => {
+					return new Promise((resolve, reject) => {
+						uni.getLocation({
+							type: 'gcj02',
+							success: (loc) => {
+								this.InitSharingCode(options, loc);
+								resolve(loc);
+							},
+							fail: (err) => {
+								const errMsg = err.errMsg.includes('auth') ?
+									'位置权限已拒绝，请前往设置开启' : '获取位置失败';
+								uni.showToast({
+									title: errMsg,
+									icon: 'none'
+								});
+								reject(err);
+							}
+						});
+					});
+				};
+
+				try {
+					// 区分不同平台处理权限
+					if (this.deviceInfo.isMiniProgram && this.deviceInfo.isWechatMini) {
+						// 小程序端：使用uni.getSetting
+						uni.getSetting({
+							success: ({
+								authSetting
+							}) => {
+								if (authSetting['scope.userLocation']) {
+									getLoc();
+								} else {
+									uni.authorize({
+										scope: 'scope.userLocation',
+										success: getLoc,
+										fail: () => {
+											uni.showModal({
+												title: '权限提示',
+												content: '需开启位置权限才能使用地图功能',
+												confirmText: '去设置',
+												success: (r) => {
+													if (r.confirm) {
+														uni.openSetting();
+													}
+												}
+											});
+										}
+									});
+								}
+							}
+						});
+					} else if (this.deviceInfo.isApp) {
+						// App端：安卓/iOS权限处理
+						if (this.deviceInfo.isAndroid) {
+							const hasPermission = await this.checkAndroidLocationPermission();
+							if (hasPermission) {
+								getLoc();
+							} else {
+								uni.showModal({
+									title: '权限提示',
+									content: '需开启位置权限才能使用地图功能，请前往设置开启',
+									confirmText: '去设置',
+									success: (res) => {
+										if (res.confirm) {
+											// #ifdef APP-PLUS
+											plus.runtime.openURL('app-settings:');
+											// #endif
+										}
+									}
+								});
+							}
+						} else {
+							// iOS App直接获取位置（系统自动弹权限）
+							getLoc();
+						}
+					} else {
+						// 其他平台直接获取
+						getLoc();
+					}
+				} catch (err) {
+					console.error('获取位置权限失败：', err);
+					uni.showToast({
+						title: '获取位置权限失败',
+						icon: 'none'
+					});
+				}
 			},
 			// 获取控车码并设置缓存,然后执行其他地图操作			
 			async InitSharingCode(evt = {}, loc = {}) {
@@ -443,7 +558,7 @@
 				// 所有条件不满足时，赋值经纬度（修复longitude拼写错误）
 				else if (needSetLocation && loc.latitude && loc.longitude) {
 					this.latitude = loc.latitude;
-					this.longitude = loc.longitude; // 原代码少写一个e，已修复
+					this.longitude = loc.longitude;
 				}
 			},
 			// 获取车辆位置
@@ -453,6 +568,8 @@
 				}).then(res => {
 					if (res?.code !== 1000) return;
 					const i = res.content || {};
+					// 保存租车公司信息（用于联系电话）
+					this.rentCompany = i.rentCompany || {};
 					Object.assign(this, {
 						...i,
 						current_latitude: i.latitude,
@@ -512,10 +629,9 @@
 			// 开锁、关锁、寻车核心逻辑（精简版）
 			handleFooterBtn(evt) {
 				if (!this.shareCode) {
-					// Uniapp 统一的提示框API
 					uni.showToast({
 						title: '无可用车辆',
-						icon: 'none', // 小程序默认是success，这里显式指定none更符合原逻辑
+						icon: 'none',
 						duration: 2000
 					});
 					return
@@ -529,23 +645,22 @@
 								title: '正在控制...',
 								mask: true
 							});
-							loadingShowed = true; // 标记loading已显示
+							loadingShowed = true;
 							return true;
 						} catch (e) {
 							console.warn('显示加载失败:', e);
-							loadingShowed = false; // 标记loading未显示
+							loadingShowed = false;
 							return false;
 						}
 					},
 					hide: () => {
-						// 只有loading成功显示过，才执行隐藏操作
 						if (loadingShowed) {
 							try {
 								uni.hideLoading();
 							} catch (e) {
 								console.warn('隐藏加载失败:', e);
 							} finally {
-								loadingShowed = false; // 重置标识
+								loadingShowed = false;
 							}
 						}
 					}
@@ -558,13 +673,11 @@
 				});
 
 				const handleCore = () => {
-					// 尝试显示loading，失败则直接返回
 					if (!safeLoading.show()) return;
 
-					// 校验设备标识
 					if (!this.sn) {
 						showErrorToast('未找到有效设备标识');
-						safeLoading.hide(); // 此时loading已显示，可安全隐藏
+						safeLoading.hide();
 						return;
 					}
 
@@ -572,7 +685,6 @@
 						currentMode: controlType
 					} = this;
 
-					// 蓝牙分支（暂未开发）
 					if (controlType === -5) {
 						uni.showModal({
 							title: '温馨提示',
@@ -588,7 +700,6 @@
 						return;
 					}
 
-					// 网络分支（仅处理-4模式）
 					if (controlType === -4) {
 						const requestParams = {
 							operationType: evt,
@@ -597,7 +708,7 @@
 
 						u_operation(requestParams)
 							.then(res => {
-								safeLoading.hide(); // 请求完成后隐藏loading
+								safeLoading.hide();
 								if (res?.code === 1000) {
 									const successMsg = requestParams.operationType === 5 ?
 										'寻车成功，请注意附近鸣笛车辆!' :
@@ -611,7 +722,7 @@
 								}
 							})
 							.catch(err => {
-								safeLoading.hide(); // 请求失败也隐藏loading
+								safeLoading.hide();
 								showErrorToast(err.message || '网络请求异常');
 							});
 					} else {
@@ -720,7 +831,7 @@
 							});
 					}
 				} finally {
-					//  统一清理 (如果需要)
+					// 统一清理
 				}
 			},
 			// 归还车辆
@@ -739,27 +850,31 @@
 			},
 			// 查看照片
 			handleViewPhotos() {
-				// 校验车辆编号是否存在
 				if (!this.shareCode) {
-					// Uniapp 统一的提示框API
 					uni.showToast({
 						title: '无可用车辆',
-						icon: 'none', // 小程序默认是success，这里显式指定none更符合原逻辑
+						icon: 'none',
 						duration: 2000
 					});
 					return
 				}
 
-				// 处理图片链接，拼接完整URL并替换路径分隔符
 				const images = this.g_images.map(ele => {
+					if (!ele) return '';
 					let temp = this.c_fin3_link + ele.replace(/\\/g, "/")
 					return temp
-				})
+				}).filter(Boolean); // 过滤空链接
 
-				// Uniapp 统一的图片预览API
+				if (images.length === 0) {
+					uni.showToast({
+						title: '暂无照片可查看',
+						icon: 'none'
+					});
+					return;
+				}
+
 				uni.previewImage({
-					urls: images, // 需要预览的图片http链接列表
-					// 可选：添加失败回调，增强代码健壮性
+					urls: images,
 					fail: (err) => {
 						console.error('图片预览失败：', err)
 						uni.showToast({
@@ -819,6 +934,15 @@
 					await this.handleCenterLocation();
 					const latitude = Number(this.current_latitude);
 					const longitude = Number(this.current_longitude);
+
+					if (!latitude || !longitude) {
+						uni.showToast({
+							title: '暂无车辆位置信息',
+							icon: 'none'
+						});
+						return;
+					}
+
 					uni.openLocation({
 						latitude,
 						longitude,
@@ -986,11 +1110,8 @@
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 		display: flex;
 		flex-direction: column;
-		/* 垂直布局 */
 		gap: 8px;
-		/* 垂直间距 */
 		width: 35px;
-		/* 适配垂直布局的宽度 */
 	}
 
 	.mode-item {
@@ -1022,7 +1143,6 @@
 	.bottom-right-controls {
 		position: absolute;
 		bottom: 30px;
-		/* 避开底部导航栏 */
 		right: 16px;
 		z-index: 999;
 		display: flex;
