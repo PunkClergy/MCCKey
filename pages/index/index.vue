@@ -166,12 +166,11 @@
 		},
 		onShow() {
 			try {
-				console.log(this.latitude);
 				this.initLoginState();
 				this.InitDetermineEquipment();
-				if (!this.latitude || !this.longitude) {
-					this.InitgetCurrentLocation();
-				}
+				// if (!this.latitude || !this.longitude||!this.shareCode) {
+				// 	this.InitgetCurrentLocation();
+				// }暂时注释 但这行代码很重要
 			} catch (error) {
 				console.error('页面显示失败:', error);
 			}
