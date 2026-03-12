@@ -17,27 +17,17 @@
 			<!-- 左上角：网络/蓝牙模式切换 -->
 			<view class="top-left-controls">
 				<view class="control-card">
-					<view 
-						class="mode-item" 
-						:class="{ active: currentMode === modeTypes.NETWORK }" 
-						@click="handleControl(modeTypes.NETWORK)"
-					>
-						<image 
-							class="mode-img"
+					<view class="mode-item" :class="{ active: currentMode === modeTypes.NETWORK }"
+						@click="handleControl(modeTypes.NETWORK)">
+						<image class="mode-img"
 							:src="currentMode === modeTypes.NETWORK ? '/static/images/wifi_1.png' : '/static/images/wifi.png'"
-							mode="widthFix"
-						></image>
+							mode="widthFix"></image>
 					</view>
-					<view 
-						class="mode-item" 
-						:class="{ active: currentMode === modeTypes.BLUETOOTH }" 
-						@click="handleControl(modeTypes.BLUETOOTH)"
-					>
-						<image 
-							class="mode-img"
+					<view class="mode-item" :class="{ active: currentMode === modeTypes.BLUETOOTH }"
+						@click="handleControl(modeTypes.BLUETOOTH)">
+						<image class="mode-img"
 							:src="currentMode === modeTypes.BLUETOOTH ? '/static/images/bluetooth_1.png' : '/static/images/bluetooth.png'"
-							mode="widthFix"
-						></image>
+							mode="widthFix"></image>
 					</view>
 				</view>
 			</view>
@@ -61,39 +51,36 @@
 			</view>
 
 			<!-- 核心地图组件 -->
-			<map 
-				class="map" 
-				:latitude="latitude" 
-				:longitude="longitude" 
-				:scale="mapScale" 
-				show-location
-				@tap="handleMapClick" 
-				:markers="markers" 
-				@regionchange="handleOnMapRegionChange"
-			></map>
+			<map class="map" :latitude="latitude" :longitude="longitude" :scale="mapScale" show-location
+				@tap="handleMapClick" :markers="markers" @regionchange="handleOnMapRegionChange"></map>
 		</view>
 
 		<!-- 底部控制栏（5个按钮） -->
 		<view class="bottom-controls">
 			<view class="control-bar">
 				<view class="control-btn" @click="handleFooterBtn(btnTypes.UNLOCK)">
-					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_unlock.png" mode="widthFix"></image>
+					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_unlock.png"
+						mode="widthFix"></image>
 					<text class="btn-text">开锁</text>
 				</view>
 				<view class="control-btn" @click="handleFooterBtn(btnTypes.LOCK)">
-					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_lock.png" mode="widthFix"></image>
+					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_lock.png" mode="widthFix">
+					</image>
 					<text class="btn-text">关锁</text>
 				</view>
 				<view class="control-btn" @click="handleFooterBtn(btnTypes.FIND_CAR)">
-					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_lookFor.png" mode="widthFix"></image>
+					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_lookFor.png"
+						mode="widthFix"></image>
 					<text class="btn-text">寻车</text>
 				</view>
 				<view class="control-btn" @click="handleReturningVehicles">
-					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_return.png" mode="widthFix"></image>
+					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_return.png"
+						mode="widthFix"></image>
 					<text class="btn-text">还车</text>
 				</view>
 				<view class="control-btn" @click="handleViewPhotos">
-					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_photo.png" mode="widthFix"></image>
+					<image class="btn-img" src="https://k3a.wiselink.net.cn/img/app/desk/ren_photo.png" mode="widthFix">
+					</image>
 					<text class="btn-text">查看</text>
 				</view>
 			</view>
@@ -102,9 +89,15 @@
 </template>
 
 <script>
-	import { deviceDetector } from '@/utils/ToolClass.js';
+	import {
+		deviceDetector
+	} from '@/utils/ToolClass.js';
 	import bleManager from '@/utils/BleKeyFun-utils-single.js';
-	import { u_getCarPoisitonByCode, u_operation, u_getControlCodeByMobile } from '@/api';
+	import {
+		u_getCarPoisitonByCode,
+		u_operation,
+		u_getControlCodeByMobile
+	} from '@/api';
 	import 'url-search-params-polyfill';
 
 	// 常量定义（提升可读性和可维护性）
@@ -159,7 +152,8 @@
 		async onLoad(options) {
 			try {
 				this.deviceInfo = deviceDetector.getDeviceInfo();
-				await this.InitgetCurrentLocation(options);
+				// await this.InitgetCurrent();
+				this.options = options
 			} catch (error) {
 				console.error('页面初始化失败:', error);
 			}
@@ -168,9 +162,9 @@
 			try {
 				this.initLoginState();
 				this.InitDetermineEquipment();
-				// if (!this.latitude || !this.longitude||!this.shareCode) {
-				// 	this.InitgetCurrentLocation();
-				// }暂时注释 但这行代码很重要
+				if (this.options) {
+					this.InitgetCurrentLocation(this.options);
+				}
 			} catch (error) {
 				console.error('页面显示失败:', error);
 			}
@@ -213,7 +207,11 @@
 			 * @param {number} duration 显示时长
 			 */
 			$showToast(title, icon = 'none', duration = 2000) {
-				uni.showToast({ title, icon, duration });
+				uni.showToast({
+					title,
+					icon,
+					duration
+				});
 			},
 
 			/**
@@ -224,15 +222,16 @@
 					const systemInfo = uni.getSystemInfoSync();
 					const statusBarHeight = systemInfo.statusBarHeight || 0;
 					const menuButtonInfo = uni.getMenuButtonBoundingClientRect?.() || {};
-					
+
 					const systemInfoObj = {
 						screen_width: systemInfo.screenWidth || 0,
 						screen_height: systemInfo.screenHeight || 0,
 						height_from_head: statusBarHeight,
-						head_height: !menuButtonInfo.height 
-							? statusBarHeight + 44 
-							: statusBarHeight + menuButtonInfo.height + (menuButtonInfo.top - statusBarHeight) * 2,
-						capsule_distance_to_the_right: systemInfo.screenWidth - (menuButtonInfo.right || systemInfo.screenWidth - 16),
+						head_height: !menuButtonInfo.height ?
+							statusBarHeight + 44 : statusBarHeight + menuButtonInfo.height + (menuButtonInfo.top -
+								statusBarHeight) * 2,
+						capsule_distance_to_the_right: systemInfo.screenWidth - (menuButtonInfo.right || systemInfo
+							.screenWidth - 16),
 						capsule_top: menuButtonInfo.top || 0,
 						capsule_left: menuButtonInfo.left || 0,
 						capsule_width: menuButtonInfo.width || 0,
@@ -243,7 +242,13 @@
 
 					Object.assign(this, systemInfoObj);
 
-					const { capsule_height, capsule_top, capsule_left, capsule_distance_to_the_right, capsule_width } = this;
+					const {
+						capsule_height,
+						capsule_top,
+						capsule_left,
+						capsule_distance_to_the_right,
+						capsule_width
+					} = this;
 					const capsuleBaseHeight = capsule_height + capsule_top + 10;
 					const capsuleBaseWidth = capsule_left - (capsule_distance_to_the_right * 2);
 
@@ -275,7 +280,7 @@
 					const statusBarHeight = systemInfo.statusBarHeight || 0;
 					const navBarHeight = 48;
 					const headHeight = statusBarHeight + navBarHeight;
-					
+
 					const capsuleDefault = {
 						capsule_distance_to_the_right: 16,
 						capsule_top: statusBarHeight + 8,
@@ -309,7 +314,7 @@
 					const statusBarHeight = systemInfo.statusBarHeight || 20;
 					const navBarHeight = 44;
 					const headHeight = statusBarHeight + navBarHeight;
-					
+
 					const capsuleDefault = {
 						capsule_distance_to_the_right: 16,
 						capsule_top: statusBarHeight + 6,
@@ -340,7 +345,13 @@
 			 * @param {number} navBarHeight 导航栏高度
 			 */
 			_calcHeaderStyle(systemInfo, navBarHeight) {
-				const { capsule_height, capsule_top, capsule_left, capsule_distance_to_the_right, capsule_width } = this;
+				const {
+					capsule_height,
+					capsule_top,
+					capsule_left,
+					capsule_distance_to_the_right,
+					capsule_width
+				} = this;
 				const capsuleBaseHeight = capsule_height + capsule_top + 10;
 				const capsuleBaseWidth = capsule_left - (capsule_distance_to_the_right * 2);
 
@@ -389,10 +400,12 @@
 						try {
 							const main = plus.android.runtimeMainActivity();
 							const Manifest = plus.android.importClass('android.Manifest');
-							const PermissionChecker = plus.android.importClass('android.content.pm.PackageManager');
+							const PermissionChecker = plus.android.importClass(
+								'android.content.pm.PackageManager');
 
-							const hasPermission = main.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) === PermissionChecker.PERMISSION_GRANTED;
-							
+							const hasPermission = main.checkSelfPermission(Manifest.permission
+								.ACCESS_FINE_LOCATION) === PermissionChecker.PERMISSION_GRANTED;
+
 							if (hasPermission) {
 								resolve(true);
 								return;
@@ -436,9 +449,9 @@
 						await this.InitSharingCode(options, loc);
 						return loc;
 					} catch (err) {
-						const errMsg = err.errMsg?.includes('auth') 
-							? '位置权限已拒绝，请前往设置开启' 
-							: '获取位置失败';
+						const errMsg = err.errMsg?.includes('auth') ?
+							'位置权限已拒绝，请前往设置开启' :
+							'获取位置失败';
 						this.$showToast(errMsg);
 						throw err;
 					}
@@ -447,7 +460,9 @@
 				try {
 					if (this.deviceInfo.isMiniProgram && this.deviceInfo.isWechatMini) {
 						const authSetting = await new Promise(resolve => {
-							uni.getSetting({ success: res => resolve(res.authSetting) });
+							uni.getSetting({
+								success: res => resolve(res.authSetting)
+							});
 						});
 
 						if (authSetting['scope.userLocation']) {
@@ -510,10 +525,17 @@
 					let needSetLocation = true;
 
 					if (!finalShareCode) {
-						const { token = '', mobile = '' } = uni.getStorageSync('userKey') ?? {};
+						const {
+							token = '', mobile = ''
+						} = uni.getStorageSync('userKey') ?? {};
 						if (token) {
 							try {
-								const { code, content } = await u_getControlCodeByMobile({ mobile }) || {};
+								const {
+									code,
+									content
+								} = await u_getControlCodeByMobile({
+									mobile
+								}) || {};
 								if (code === 1000 && content) {
 									needSetLocation = false;
 									let targetCar = null;
@@ -521,8 +543,10 @@
 									if (Array.isArray(content) && content.length > 1) {
 										while (!targetCar) {
 											try {
-												const { tapIndex } = await uni.showActionSheet({
-													itemList: content.map(car => 
+												const {
+													tapIndex
+												} = await uni.showActionSheet({
+													itemList: content.map(car =>
 														`${car.vehicleSerialName || ''}${car.vehicleModeName || ''}(${car.platenumber || '未上牌'})`
 													),
 													showCancel: false,
@@ -567,18 +591,31 @@
 			 * @param {string} code 分享码
 			 */
 			handleSearchLink(code) {
-				u_getCarPoisitonByCode({ code })
+				u_getCarPoisitonByCode({
+						code
+					})
 					.then(res => {
 						if (res?.code !== 1000) return;
-						
+
 						const carData = res.content || {};
 						this.rentCompany = carData.rentCompany || {};
-						
+
 						// 解构赋值简化代码
-						const { 
-							latitude, longitude, plateNumber, address, showtime,
-							uploadImgUrl, uploadImgUrlFive, uploadImgUrlFour,
-							uploadImgUrlThree, uploadImgUrlTwo, sn, idc, blueKey, deviceType
+						const {
+							latitude,
+							longitude,
+							plateNumber,
+							address,
+							showtime,
+							uploadImgUrl,
+							uploadImgUrlFive,
+							uploadImgUrlFour,
+							uploadImgUrlThree,
+							uploadImgUrlTwo,
+							sn,
+							idc,
+							blueKey,
+							deviceType
 						} = carData;
 
 						// 赋值业务数据
@@ -592,7 +629,9 @@
 							idc,
 							blueKey,
 							deviceType,
-							g_images: [uploadImgUrl, uploadImgUrlFive, uploadImgUrlFour, uploadImgUrlThree, uploadImgUrlTwo]
+							g_images: [uploadImgUrl, uploadImgUrlFive, uploadImgUrlFour, uploadImgUrlThree,
+								uploadImgUrlTwo
+							]
 						});
 
 						// 设置地图标记
@@ -622,7 +661,7 @@
 				if (mode === this.currentMode) return;
 
 				this.currentMode = mode;
-				
+
 				if (mode === MODE_TYPES.NETWORK) {
 					this.$showToast('已经切换成网络控车模式');
 					bleManager.releaseBle();
@@ -646,7 +685,10 @@
 					showed: false,
 					show() {
 						try {
-							uni.showLoading({ title: '正在控制...', mask: true });
+							uni.showLoading({
+								title: '正在控制...',
+								mask: true
+							});
 							this.showed = true;
 						} catch (e) {
 							console.warn('显示加载失败:', e);
@@ -673,7 +715,9 @@
 					return;
 				}
 
-				const { currentMode: controlType } = this;
+				const {
+					currentMode: controlType
+				} = this;
 
 				// 蓝牙模式
 				if (controlType === MODE_TYPES.BLUETOOTH) {
@@ -689,13 +733,16 @@
 
 				// 网络模式
 				if (controlType === MODE_TYPES.NETWORK) {
-					u_operation({ operationType: type, sn: this.sn })
+					u_operation({
+							operationType: type,
+							sn: this.sn
+						})
 						.then(res => {
 							loading.hide();
 							if (res?.code === 1000) {
-								const successMsg = type === BTN_TYPES.FIND_CAR 
-									? '寻车成功，请注意附近鸣笛车辆!' 
-									: '控制成功!';
+								const successMsg = type === BTN_TYPES.FIND_CAR ?
+									'寻车成功，请注意附近鸣笛车辆!' :
+									'控制成功!';
 								this.$showToast(successMsg);
 							} else {
 								this.$showToast(res?.msg || '请求失败');
@@ -726,7 +773,10 @@
 				const bluetoothHandler = (state) => {
 					const handlers = {
 						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_PRE_EXECUTE]: () => {
-							uni.showLoading({ title: '指令执行中...', icon: 'none' });
+							uni.showLoading({
+								title: '指令执行中...',
+								icon: 'none'
+							});
 						},
 						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_ERROR]: uni.hideLoading,
 						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_ADAPTER_UNAVAILABLE]: () => {
@@ -825,7 +875,10 @@
 			 */
 			handleOnMapRegionChange(evt) {
 				try {
-					const { latitude, longitude } = evt?.detail?.centerLocation || {};
+					const {
+						latitude,
+						longitude
+					} = evt?.detail?.centerLocation || {};
 					if (latitude && longitude && (latitude !== this.latitude || longitude !== this.longitude)) {
 						this.latitude = latitude;
 						this.longitude = longitude;
@@ -897,8 +950,10 @@
 			handleLogin() {
 				const navMethod = this.login_status ? 'navigateTo' : 'redirectTo';
 				const url = this.login_status ? '/pages/userCenter/index' : '/pages/login/index';
-				
-				uni[navMethod]({ url });
+
+				uni[navMethod]({
+					url
+				});
 			},
 
 			/**
