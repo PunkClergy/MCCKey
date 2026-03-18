@@ -130,7 +130,7 @@
     /* 快应用特有相关 */
     "mp-weixin" : {
         /* 小程序特有相关 */
-        "appid" : "wxba6c63453f7bdd31",
+        "appid" : "wxaa499434fc3a524b",
         "permission" : {
             "scope.userLocation" : {
                 "desc" : "你的位置信息用于定位当前位置，展示附近服务"

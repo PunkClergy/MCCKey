@@ -585,17 +585,32 @@
 					console.error('处理分享码失败:', error);
 				}
 			},
-
+			// 获取小程序登录code（支持多平台）
+			handleGetWxCode(source) {
+				return new Promise((resolve) => {
+					uni.login({
+						provider: source,
+						success: (res) => resolve(res.code || ""),
+						fail: () => resolve(""),
+						complete: (res) => console.log(`获取${source} code：`, res.code || "失败")
+					});
+				});
+			},
 			/**
 			 * 获取车辆位置
 			 * @param {string} code 分享码
 			 */
-			handleSearchLink(code) {
+			async handleSearchLink(code) {
+				const wxcode = await this.handleGetWxCode('weixin');
 				u_getCarPoisitonByCode({
-						code
+						code,
+						wxcode
 					})
 					.then(res => {
-						if (res?.code !== 1000) return;
+						if (res?.code !== 1000) {
+							this.$showToast(res?.msg, 'none', 1500);
+							return
+						};
 
 						const carData = res.content || {};
 						this.rentCompany = carData.rentCompany || {};

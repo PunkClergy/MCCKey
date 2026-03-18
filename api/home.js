@@ -7,8 +7,8 @@ export const u_verifyControlcode = (data) => http.postFormData('/renterApi/verif
 export const u_operation = (data) => http.postFormData('/dzBussinessMobileApi/operation', data)
 export const u_logo = (data) => http.get('/deskapi/logo', data)
 export const u_getQrcodeImg = (data) => http.get('/deskapi/getQrcodeImg', data)
-export const u_wxLogin = (data) => http.postFormData('/userapi/wxLogin', data)
-export const u_login = (data) => http.postFormData('/api/login', data)
+export const u_wxLogin = (data) => http.postFormData('/userapi/zcyWxLogin', data)
+export const u_login = (data) => http.postFormData('/userapi/zcyLogin', data)
 export const u_getControlCodeByMobile = (data) => http.get('/renterApi/getControlCodeByMobile', data)
 
 
