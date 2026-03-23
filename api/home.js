@@ -2,7 +2,7 @@ import {
 	http
 } from '@/utils/request/http'
 
-export const u_getCarPoisitonByCode = (data) => http.postFormData('/renterApi/getCarPoisitonByCode', data)
+export const u_getCarPoisitonByCode = (data) => http.postFormData('/renterApi/getCarPoisitonByCodeNew', data)
 export const u_verifyControlcode = (data) => http.postFormData('/renterApi/verifyControlcode', data)
 export const u_operation = (data) => http.postFormData('/dzBussinessMobileApi/operation', data)
 export const u_logo = (data) => http.get('/deskapi/logo', data)

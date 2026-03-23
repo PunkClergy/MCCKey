@@ -315,7 +315,7 @@ export default {
         return;
       }
 
-      const uploadUrl = 'https://fin3.wiselink.net.cn/fin/h5Car/saveImg';
+      const uploadUrl = 'https://k1sw.wiselink.net.cn/renterApi/saveImg';
       const code = this.code;
 
       // 批量上传所有图片
@@ -355,7 +355,7 @@ export default {
       // 提交数据
       uni.request({
         timeout: 20000,
-        url: `https://fin3.wiselink.net.cn/fin/h5CarManager/returnCar`,
+        url: `https://k1sw.wiselink.net.cn/renterApi/returnCar`,
         data: param,
         header: header,
         method: 'POST',
