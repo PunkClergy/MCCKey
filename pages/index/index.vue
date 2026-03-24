@@ -135,7 +135,7 @@
 				markers: [],
 				// 状态相关
 				login_status: false,
-				c_fin3_link: 'https://fin3.wiselink.net.cn/fin/',
+				c_fin3_link: 'https://k1sw.wiselink.net.cn/img/',
 				contactPhone: DEFAULT_CONTACT_PHONE,
 				// 业务数据
 				deviceInfo: {},
@@ -717,7 +717,9 @@
 							sn,
 							idc,
 							blueKey,
-							deviceType
+							deviceType,
+							endDate,
+							startDate
 						} = carData;
 
 						// 赋值业务数据
@@ -732,6 +734,8 @@
 							blueKey,
 							deviceType,
 							plateNumber: plateNumber || '',
+							endDate,
+							startDate,
 							g_images: [uploadImgUrl, uploadImgUrlFive, uploadImgUrlFour, uploadImgUrlThree,
 								uploadImgUrlTwo
 							]
@@ -747,7 +751,7 @@
 							width: 20,
 							height: 43,
 							callout: {
-								content: `${plateNumber || ''}\n当前位置：${address || '未知'}\n定位时间：${showtime || '未知'}`,
+								content: `${plateNumber || ''}\n当前位置：${address || '未知'}\n定位时间：${showtime || '未知'}\n授权时间:${startDate}至${endDate}`,
 								display: 'ALWAYS',
 								padding: 8
 							}
@@ -962,7 +966,6 @@
 					this.$showToast('暂无照片可查看');
 					return;
 				}
-
 				uni.previewImage({
 					urls: images,
 					fail: (err) => {

@@ -336,7 +336,7 @@ export default {
       this.showLoading('提交中...');
       
       const param = {
-        controlCode: this.code
+        code: this.code
       };
 
       // 构造请求头
