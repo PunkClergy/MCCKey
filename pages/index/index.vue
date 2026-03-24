@@ -154,17 +154,33 @@
 		},
 		// 实时监听临时状态变化 → 自动存缓存
 		watch: {
-			sn: { handler: 'saveTempDataToCache', deep: true },
-			idc: { handler: 'saveTempDataToCache', deep: true },
-			blueKey: { handler: 'saveTempDataToCache', deep: true },
-			deviceType: { handler: 'saveTempDataToCache', deep: true }
+			sn: {
+				handler: 'saveTempDataToCache',
+				deep: true
+			},
+			idc: {
+				handler: 'saveTempDataToCache',
+				deep: true
+			},
+			blueKey: {
+				handler: 'saveTempDataToCache',
+				deep: true
+			},
+			deviceType: {
+				handler: 'saveTempDataToCache',
+				deep: true
+			},
+			plateNumber: {
+				handler: 'saveTempDataToCache',
+				deep: true
+			} // 新增
 		},
 		async onLoad(options) {
 			try {
 				this.deviceInfo = deviceDetector.getDeviceInfo();
 				// await this.InitgetCurrent();
 				this.options = options
-				
+
 				// 进入页面立即检查网络
 				this.checkNetworkImmediately();
 			} catch (error) {
@@ -195,7 +211,8 @@
 					sn: this.sn,
 					idc: this.idc,
 					blueKey: this.blueKey,
-					deviceType: this.deviceType
+					deviceType: this.deviceType,
+					plateNumber: this.plateNumber
 				};
 				uni.setStorageSync('carTempData', tempData);
 			},
@@ -205,7 +222,7 @@
 				try {
 					const res = await uni.getNetworkStatus();
 					this.networkConnected = res.isConnected || res.networkType !== 'none';
-					
+
 					// 没网 + 没跳过 → 跳紧急页，不可返回
 					if (!this.networkConnected && !this.hasJumpedEmergency) {
 						this.hasJumpedEmergency = true;
@@ -217,7 +234,7 @@
 					console.error('网络检测失败', e);
 				}
 			},
-			
+
 			// ==================== 实时网络检测 ====================
 			startNetworkListener() {
 				uni.onNetworkStatusChange(res => {
@@ -714,6 +731,7 @@
 							idc,
 							blueKey,
 							deviceType,
+							plateNumber: plateNumber || '',
 							g_images: [uploadImgUrl, uploadImgUrlFive, uploadImgUrlFour, uploadImgUrlThree,
 								uploadImgUrlTwo
 							]
