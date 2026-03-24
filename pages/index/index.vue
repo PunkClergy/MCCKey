@@ -146,14 +146,27 @@
 				sn: '',
 				idc: '',
 				blueKey: '',
-				deviceType: ''
+				deviceType: '',
+				// 新增：实时网络状态
+				networkConnected: true,
+				hasJumpedEmergency: false // 标记：是否已经跳过紧急页面
 			};
+		},
+		// 实时监听临时状态变化 → 自动存缓存
+		watch: {
+			sn: { handler: 'saveTempDataToCache', deep: true },
+			idc: { handler: 'saveTempDataToCache', deep: true },
+			blueKey: { handler: 'saveTempDataToCache', deep: true },
+			deviceType: { handler: 'saveTempDataToCache', deep: true }
 		},
 		async onLoad(options) {
 			try {
 				this.deviceInfo = deviceDetector.getDeviceInfo();
 				// await this.InitgetCurrent();
 				this.options = options
+				
+				// 进入页面立即检查网络
+				this.checkNetworkImmediately();
 			} catch (error) {
 				console.error('页面初始化失败:', error);
 			}
@@ -165,11 +178,68 @@
 				if (this.options) {
 					this.InitgetCurrentLocation(this.options);
 				}
+				// 启动实时网络监听
+				this.startNetworkListener();
 			} catch (error) {
 				console.error('页面显示失败:', error);
 			}
 		},
+		onUnload() {
+			// 页面销毁时关闭网络监听，防止内存泄漏
+			this.stopNetworkListener();
+		},
 		methods: {
+			// ==================== 实时保存临时状态到缓存 ====================
+			saveTempDataToCache() {
+				const tempData = {
+					sn: this.sn,
+					idc: this.idc,
+					blueKey: this.blueKey,
+					deviceType: this.deviceType
+				};
+				uni.setStorageSync('carTempData', tempData);
+			},
+
+			// ==================== 核心：进入立即检查网络 ====================
+			async checkNetworkImmediately() {
+				try {
+					const res = await uni.getNetworkStatus();
+					this.networkConnected = res.isConnected || res.networkType !== 'none';
+					
+					// 没网 + 没跳过 → 跳紧急页，不可返回
+					if (!this.networkConnected && !this.hasJumpedEmergency) {
+						this.hasJumpedEmergency = true;
+						uni.redirectTo({
+							url: '/pages/meet/index/index'
+						});
+					}
+				} catch (e) {
+					console.error('网络检测失败', e);
+				}
+			},
+			
+			// ==================== 实时网络检测 ====================
+			startNetworkListener() {
+				uni.onNetworkStatusChange(res => {
+					this.networkConnected = res.isConnected;
+					if (!res.isConnected && !this.hasJumpedEmergency) {
+						// 没网 + 没跳过 → 跳转，不可返回
+						this.hasJumpedEmergency = true;
+						uni.redirectTo({
+							url: '/pages/meet/index/index'
+						});
+					} else if (res.isConnected) {
+						// 网络恢复，重置标记
+						this.hasJumpedEmergency = false;
+						this.$showToast('网络已恢复', 'none', 2000);
+					}
+				});
+			},
+			stopNetworkListener() {
+				uni.offNetworkStatusChange();
+			},
+			// ==========================================================
+
 			/**
 			 * 拨打咨询电话
 			 */
@@ -1134,6 +1204,7 @@
 
 	.mode-item:active {
 		transform: scale(0.95);
+		opacity: 0.9;
 	}
 
 	.mode-img {

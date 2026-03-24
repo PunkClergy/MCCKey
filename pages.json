@@ -29,6 +29,13 @@
 				"navigationBarBackgroundColor": "#252C3B",
 				"navigationBarTextStyle": "white"
 			}
+		},
+		{
+			"path" : "pages/meet/index/index",
+			"style" : 
+			{
+				"navigationBarTitleText" : "应急开关锁"
+			}
 		}
 	],
 	"permission": {
