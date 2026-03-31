@@ -11,13 +11,13 @@
 			</view>
 
 			<!-- 登录方式选择 -->
-			<view class="radio-container" v-if="hardware">
+			<view class="radio-container" >
 				<radio-group class="radio-group" @change="radioChange">
-					<label class="radio-label">
+					<label class="radio-label" v-if="hardware">
 						<radio value="1" checked color="#4cd964" class="radio-item" />
 						<text class="radio-text">手机号登录</text>
 					</label>
-					<label class="radio-label">
+					<label class="radio-label" v-else>
 						<radio value="2" color="#4cd964" class="radio-item" />
 						<text class="radio-text">账号密码登录</text>
 					</label>

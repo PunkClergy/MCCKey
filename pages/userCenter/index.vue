@@ -62,11 +62,6 @@
 						text: '联系智信通'
 					},
 					{
-						icon: '/static/images/switch.png',
-						handleEvent: 'switchAccount',
-						text: '切换账号'
-					},
-					{
 						icon: '/static/images/out.png',
 						handleEvent: 'signOut',
 						text: '退出登录'
