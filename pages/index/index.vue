@@ -95,6 +95,7 @@
 	import bleManager from '@/utils/BleKeyFun-utils-single.js';
 	import {
 		u_getCarPoisitonByCode,
+		u_getCarPoisitonByCodeNew,
 		u_operation,
 		u_getControlCodeByMobile
 	} from '@/api';
@@ -688,11 +689,25 @@
 			 * @param {string} code 分享码
 			 */
 			async handleSearchLink(code) {
+				// 区分环境：小程序用新接口+传wxcode，APP用旧接口+不传wxcode
+				let requestApi;
+				// #ifdef MP-WEIXIN
+				// 微信小程序环境
 				const wxcode = await this.handleGetWxCode('weixin');
-				u_getCarPoisitonByCode({
-						code,
-						wxcode
-					})
+				requestApi = u_getCarPoisitonByCodeNew({
+					code,
+					wxcode
+				});
+				// #endif
+
+				// #ifdef APP-PLUS
+				// APP 环境（安卓+IOS）
+				requestApi = u_getCarPoisitonByCode({
+					code
+				});
+				// #endif
+
+				requestApi
 					.then(res => {
 						if (res?.code !== 1000) {
 							this.$showToast(res?.msg, 'none', 1500);
@@ -759,7 +774,6 @@
 					})
 					.catch(err => console.error('获取车辆位置失败:', err));
 			},
-
 			/**
 			 * 切换网络/蓝牙模式
 			 * @param {number} mode 模式类型
