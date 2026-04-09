@@ -75,7 +75,7 @@ function getDeviceControlCmd(cmd, controllCiphertext) {
   // 内容
   var content = serialNum.concat(cmdIdentifier).concat(controllCipherByte).concat(controlCmdLength).concat(controlCmd).concat(time);
   // 指定指令
-  var controlBytes = utils.crcEncrypt(app?.globalData?.CRC_TABLE_XW, content, app?.globalData?.header);
+  var controlBytes = utils.crcEncrypt(getApp()?.globalData?.CRC_TABLE_XW, content, getApp()?.globalData?.header);
   return utils.buf2hex(controlBytes);
 }
 
@@ -92,7 +92,7 @@ function getDeviceStateCmd() {
   // 内容
   var content = serialNum.concat(cmdIdentifier).concat(time);
   // 获取指令
-  var controlBytes = utils.crcEncrypt(app.globalData?.CRC_TABLE_XW, content, app.globalData?.header);
+  var controlBytes = utils.crcEncrypt(getApp()?.globalData?.CRC_TABLE_XW, content, getApp()?.globalData?.header);
   return utils.buf2hex(controlBytes);
 }
 
@@ -109,7 +109,7 @@ function getDeviceCarInfo() {
   // 内容
   var content = serialNum.concat(cmdIdentifier).concat(time);
   // 获取指令
-  var controlBytes = utils.crcEncrypt(app.globalData?.CRC_TABLE_XW, content, app.globalData?.header);
+  var controlBytes = utils.crcEncrypt(getApp()?.globalData?.CRC_TABLE_XW, content, getApp()?.globalData?.header);
   return utils.buf2hex(controlBytes);
 }
 
@@ -126,7 +126,7 @@ function getDeviceCarVIN() {
   // 内容
   var content = serialNum.concat(cmdIdentifier).concat(time);
   // 获取指令
-  var controlBytes = utils.crcEncrypt(app.globalData?.CRC_TABLE_XW, content, app.globalData?.header);
+  var controlBytes = utils.crcEncrypt(getApp()?.globalData?.CRC_TABLE_XW, content, getApp()?.globalData?.header);
   return utils.buf2hex(controlBytes);
 }
 
@@ -143,7 +143,7 @@ function getDeviceCarOIL() {
   // 内容
   var content = serialNum.concat(cmdIdentifier).concat(time);
   // 获取指令
-  var controlBytes = utils.crcEncrypt(app.globalData?.CRC_TABLE_XW, content, app.globalData?.header);
+  var controlBytes = utils.crcEncrypt(getApp().globalData?.CRC_TABLE_XW, content, getApp().globalData?.header);
   return utils.buf2hex(controlBytes);
 }
 
@@ -160,7 +160,7 @@ function getDeviceCarTIRE() {
   // 内容
   var content = serialNum.concat(cmdIdentifier).concat(time);
   // 获取指令
-  var controlBytes = utils.crcEncrypt(app.globalData?.CRC_TABLE_XW, content, app.globalData?.header);
+  var controlBytes = utils.crcEncrypt(getApp()?.globalData?.CRC_TABLE_XW, content, getApp()?.globalData?.header);
   return utils.buf2hex(controlBytes);
 }
 
@@ -177,7 +177,7 @@ function getDeviceCarMAIN() {
   // 内容
   var content = serialNum.concat(cmdIdentifier).concat(time);
   // 获取指令
-  var controlBytes = utils.crcEncrypt(app.globalData?.CRC_TABLE_XW, content, app.globalData?.header);
+  var controlBytes = utils.crcEncrypt(getApp()?.globalData?.CRC_TABLE_XW, content, getApp()?.globalData?.header);
   return utils.buf2hex(controlBytes);
 }
 
@@ -194,7 +194,7 @@ function getDeviceDevMAIN() {
   // 内容
   var content = serialNum.concat(cmdIdentifier).concat(time);
   // 获取指令
-  var controlBytes = utils.crcEncrypt(app.globalData?.CRC_TABLE_XW, content, app.globalData?.header);
+  var controlBytes = utils.crcEncrypt(getApp()?.globalData?.CRC_TABLE_XW, content, getApp()?.globalData?.header);
   return utils.buf2hex(controlBytes);
 }
 
@@ -211,7 +211,7 @@ function getDeviceDevSPINFO() {
   // 内容
   var content = serialNum.concat(cmdIdentifier).concat(time);
   // 获取指令
-  var controlBytes = utils.crcEncrypt(app.globalData?.CRC_TABLE_XW, content, app.globalData?.header);
+  var controlBytes = utils.crcEncrypt(getApp()?.globalData?.CRC_TABLE_XW, content, getApp()?.globalData?.header);
   return utils.buf2hex(controlBytes);
 }
 
@@ -226,7 +226,7 @@ function getGPSDataCmd() {
   // 内容
   var content = serialNum.concat(cmdIdentifier);
   // 获取指令
-  var controlBytes = utils.crcEncrypt(app.globalData?.CRC_TABLE_XW, content, app.globalData?.header);
+  var controlBytes = utils.crcEncrypt(getApp()?.globalData?.CRC_TABLE_XW, content, getApp()?.globalData?.header);
   return utils.buf2hex(controlBytes);
 }
 
@@ -245,7 +245,7 @@ function getNormalCmd(obdSerialNum) {
   // 内容
   var content = serialNum.concat(cmdIdentifier).concat(obdSerialByte).concat(result);
   // 获取指令
-  var controlBytes = utils.crcEncrypt(app.globalData?.CRC_TABLE_XW, content, app.globalData?.header);
+  var controlBytes = utils.crcEncrypt(getApp()?.globalData?.CRC_TABLE_XW, content, getApp()?.globalData?.header);
   return utils.buf2hex(controlBytes);
 }
 
@@ -302,7 +302,7 @@ function getDEBUGDataCmd() {
   // 内容
   var content = serialNum.concat(cmdIdentifier).concat(debugType).concat(debugLen).concat(debugPara).concat(time);
   // 获取指令
-  var controlBytes = utils.crcEncrypt(app.globalData?.CRC_TABLE_XW, content, app.globalData?.header);
+  var controlBytes = utils.crcEncrypt(getApp()?.globalData?.CRC_TABLE_XW, content, getApp()?.globalData?.header);
   return utils.buf2hex(controlBytes);
 }
 
