@@ -14,7 +14,7 @@ const WRITE_SERVICE_SHORTHAND = 'FFE5';
 var gReadService = '';
 const READ_SERVICE_SHORTHAND = 'FFE0';
 var gWriteCharacteristic = '';
-const WIRTE_CHARACTERISTIC_SHORTHAND = 'FFE9';
+const WIRTE_CHARACTERISTIC_SHORTHAND = 'FFE9';  
 var gReadCharacteristic = '';
 const READ_CHARACTERISTIC_SHORTHAND = 'FFE4';
 
@@ -404,6 +404,7 @@ function startConnect() {
       /**
        * 连接成功，后开始获取设备的服务列表
        */
+	  console.log(res,'99999999')
       gWriteService = '';
       gWriteCharacteristic = '';
       gReadService = '';
@@ -485,6 +486,7 @@ function startBluetoothDevicesDiscovery() {
 function onBluetoothDeviceFound() {
   //安卓手机6.0系统及以上 必须开启微信定位权限才能使用 蓝牙搜索功能
   uni.onBluetoothDeviceFound(function (devices) {
+	  console.log(111111,gIdc,'===2=2=22=2=2=2=2=')
     logger.e('device found:' + devices.devices[0].name);
     if (gIdc == devices.devices[0].name || gIdc == devices.devices[0].localName ||
       utils.hexCharCodeToStr(utils.buf2hex(devices.devices[0].advertisData)).indexOf(gIdc) != -1) {
@@ -506,7 +508,7 @@ function onBluetoothDeviceFound() {
       /**
        * 获取设备发过来的数据
        */
-      onBLECharacteristicValueChange();
+      // onBLECharacteristicValueChange();
       //停止扫描
       stopScanBle();
       clearTimeout(discoverTimeout);
@@ -597,6 +599,7 @@ function notifyBLECharacteristicValueChange() {
     state: true,
     success: function (res) {
       console.log(res);
+	  onBLECharacteristicValueChange()
       if (gWriteCharacteristic == '') {
         getBLEDeviceWriteCharacteristics();
       }
@@ -640,10 +643,15 @@ function getBLEDeviceWriteCharacteristics() {
           gWriteCharacteristic = res.characteristics[j].uuid;
           //写出数据
           if (equireTypeArray.indexOf(gSendType) != -1) {
-            sendMyData(gIdc, gPwd, gSendType, gBluetoothState, gOnReceiveValue, false);
+			 
+			  setTimeout(function(){
+				  sendMyData(gIdc, gPwd, gSendType, gBluetoothState, gOnReceiveValue, false);
+			  },500)
+            
           }
         }
       }
+	  
       logger.e('device设备的写特征值id:' + gWriteCharacteristic);
     }, fail: function (res) {
       console.log(res);
@@ -655,26 +663,31 @@ function getBLEDeviceWriteCharacteristics() {
  * 向低功耗蓝牙设备特征值中写入二进制数据
  */
 function writeBLECharacteristicValue(buffer, writeBLECharacteristicValue) {
-  uni.writeBLECharacteristicValue({
-    deviceId: deviceId,
-    serviceId: gWriteService,
-    characteristicId: gWriteCharacteristic,
-    value: buffer,
-    success: function (res) {
-      writeBLECharacteristicValue(true);
-    },
-    fail: function (res) {
-      console.log(res);
-      writeBLECharacteristicValue(false);
-    }
-  });
+	setTimeout(function(){
+		uni.writeBLECharacteristicValue({
+		  deviceId: deviceId,
+		  serviceId: gWriteService,
+		  characteristicId: gWriteCharacteristic,
+		  value: buffer,
+		  success: function (res) {
+		    writeBLECharacteristicValue(true);
+		  },
+		  fail: function (res) {
+		    console.log(res,'----------------=====');
+		    writeBLECharacteristicValue(false);
+		  }
+		});
+	},300)
+
 }
 
 /**
  * 获取设备发过来的数据
  */
 function onBLECharacteristicValueChange() {
+	console.log('========================---55-65-6-6')
   uni.onBLECharacteristicValueChange(function (characteristic) {
+	  console.log(characteristic,'characteristiccharacteristiccharacteristic')
     var resultArrayBufferData = characteristic.value;
     var receiverHexData = utils.buf2hex(resultArrayBufferData);
     var arrayData = utils.hexStringToArray(receiverHexData);
@@ -712,6 +725,7 @@ function onBLECharacteristicValueChange() {
       }
     }
   });
+  logger.e('22222--==')
 }
 
 /*---------------------------------------------------------------*/
@@ -857,6 +871,7 @@ function sendMyData(idc, pwd, sendType, bluetoothState, onReceiveValue, isInterc
 
   if (connected) {
     // 已连接，发送数据
+
     dispatcherSend(parseCmd(), false);
   } else {
     isSupportedBLE(function (isSupported) {
@@ -891,18 +906,28 @@ function dispatcherSend(sendData, noRepeat) {
   lastSendData = sendData;
   var dataLength = sendData.length;
   var num = dataLength / 40;
-  if (num == 0) {
-    send(sendData.substring(num, dataLength));
-	console.log(sendData.substring(num, dataLength),'5555')
-  } else {
-    for (var i = 0; i < num; i++) {
-      var start = i * 40;
-      var end = start + 40;
-      end = end > dataLength ? dataLength : end;
-      var data = sendData.substring(start, end);
-      delaySend(data, noRepeat);
-    }
-  }
+  send(sendData);
+ //  if (num == 0) {
+ //    send(sendData.substring(num, dataLength));
+	// console.log(sendData.substring(num, dataLength),'5555')
+ //  } else {
+ //    for (var i = 0; i < num; i++) {
+ //      var start = i * 40;
+ //      var end = start + 40;
+ //      end = end > dataLength ? dataLength : end;
+ //      var data = sendData.substring(start, end);
+	//   // if(i==0){
+	// 	 //  delaySend(data, noRepeat);
+	//   // }else{
+	// 	 //   setTimeout(function(){
+	// 		//      delaySend(data, noRepeat);
+	// 	 //   },500) 
+	//   // }
+	//   // delaySend(data, noRepeat);
+	//   // sleep(1000)
+      
+ //    }
+ //  }
 }
 
 /**
@@ -913,7 +938,7 @@ function delaySend(data, noRepeat) {
   var d = data;
   setTimeout(function () {
     send(d, noRepeat);
-  }, 10);
+  }, 200);
 }
 
 /**
@@ -929,14 +954,16 @@ function send(hex, noRepeat) {
   if (connected) {
     writeBLECharacteristicValue(buffer, function (isSuccess) {
       if (isSuccess) {
-        logger.e("指令发送成功:" + (new Date().getTime()));
-        if (noRepeat)
-          releaseBle();
-        else
-          sendRepet(true, noRepeat);
+		  
+        logger.e("指令发送成功:" + (new Date().getTime())+'hex'+hex);
+		console.log(1111)
+        // if (noRepeat)
+        //   releaseBle();
+        // else
+        //   sendRepet(true, noRepeat);
       } else {
-        logger.e("指令发送失败:" + (new Date().getTime()));
-        sendRepet(false, noRepeat);
+        logger.e("指令发送失败:" + (new Date().getTime())+'hex'+hex);
+        // sendRepet(false, noRepeat);
       }
     });
   }
