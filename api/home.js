@@ -1,9 +1,6 @@
 import {
 	http
 } from '@/utils/request/http'
-export const u_getHomeArea = (data) => http.get('/deskapi/homeArea', data)
-
-
 
 export const u_getCarPoisitonByCode = (data) => http.postFormData('/renterApi/getCarPoisitonByCode', data)
 export const u_getCarPoisitonByCodeNew = (data) => http.postFormData('/renterApi/getCarPoisitonByCodeNew', data)
