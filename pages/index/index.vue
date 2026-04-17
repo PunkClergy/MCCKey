@@ -800,7 +800,7 @@
 					this.$showToast('无可用车辆');
 					return;
 				}
-
+	
 				// 安全的loading管理
 				const loading = {
 					showed: false,
@@ -835,7 +835,6 @@
 					loading.hide();
 					return;
 				}
-
 				const {
 					currentMode: controlType
 				} = this;
@@ -856,7 +855,8 @@
 				if (controlType === MODE_TYPES.NETWORK) {
 					u_operation({
 							operationType: type,
-							sn: this.sn
+							sn: this.sn,
+							code:this.shareCode
 						})
 						.then(res => {
 							loading.hide();
