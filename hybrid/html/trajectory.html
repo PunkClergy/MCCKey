@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport"
+			content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=0" />
+		<link href="http://fonts.googleapis.com/css?family=Roboto:300" rel="stylesheet" type="text/css">
+		<title>谷歌地图-初始化地图</title>
+		<link rel="stylesheet" type="text/css" href="./css/index.css" />
+	</head>
+	<body>
+		<!-- 地图 -->
+		<div id="map"></div>
+		<div id="trajectory" class="trajectoryLayer">
+				轨迹查询
+		</div>
+		<div class="floatingLayer">
+			<div class='button_style' id="btnReturn" style="display: block;">送车拍照</div>
+			<div class='button_style' id="btn3" style="display: block;">开锁</div>
+			<div class='button_style' id="btn1" style="display: block;">关锁</div>
+			<div class='button_style' id="btn5" style="display: block;">寻车</div>
+			<div class='button_style' id="btnSee" style="display: block;">查看照片</div>
+			<div class='button_style' id="btn8">风控拦截</div>
+			<div class='button_style' id="btn6">取消拦截</div>
+		</div>
+
+	</body>
+	<script type="text/javascript" src="https://js.cdn.aliyun.dcloud.net.cn/dev/uni-app/uni.webview.1.5.2.js"></script>
+	<script
+		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGzLnrbvfiqdmemX8yR4CTc6n2SzjOaBM&libraries=places&callback=initMap"
+		async defer></script>
+
+	<script src="./js/trajectory.js"></script>
+</html>

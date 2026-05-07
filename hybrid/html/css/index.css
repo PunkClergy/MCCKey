@@ -1,0 +1,550 @@
+* {
+	padding: 0;
+	margin: 0;
+}
+
+html,
+body {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	position: relative;
+}
+
+#map {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.loadinggif {
+	width: 50px;
+	height: 50px;
+	position: fixed;
+	left: 50%;
+	bottom: 50%;
+	margin-left: -25px;
+	margin-top: -25px;
+	z-index: 99;
+}
+
+.gm-style-mtc {
+	display: none;
+}
+
+.gmnoprint {
+	display: none !important;
+}
+
+.gmnoprint.gm-bundled-control.gm-bundled-control-on-bottom {
+	display: none;
+}
+
+.gm-control-active.gm-fullscreen-control {
+	display: none;
+}
+
+[class^="https://maps.google.com/maps"] {
+	display: none !important;
+}
+
+.tabs {
+	width: 60%;
+	height: 40px;
+	margin-left: 20%;
+	position: fixed;
+	left: 0;
+	top: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	z-index: 100;
+
+}
+
+.tabs div {
+	width: 100px;
+	height: 40px;
+	font-size: 18px;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 20px;
+	position: relative;
+	color: #666;
+}
+
+.tabs .active span {
+	position: relative;
+	font-size: 20px;
+	font-weight: bold;
+	color: #333;
+}
+
+.tabs .active span ::after {
+	content: '';
+	width: 20px;
+	height: 5px;
+	background-color: saddlebrown;
+	position: absolute;
+	left: 20px;
+	bottom: 10px;
+
+}
+
+
+/* 动画 */
+.loader {
+	position: fixed;
+	z-index: 99;
+	border: 3px solid #f3f3f3;
+	border-top: 3px solid #ea4335;
+	border-radius: 50%;
+	width: 30px;
+	height: 30px;
+	animation: spin 2s linear infinite;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin-left: -30px;
+	margin-top: -30px;
+	transform: translate(-50%, -50%);
+
+}
+
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+/* end */
+/* 地图信息窗口样式 */
+.textoverflow {
+	width: 100%;
+
+	line-height: 23px;
+}
+
+.imgs {
+	width: 100%;
+	height: auto;
+}
+
+.infoWindow-title {
+	width: 100%;
+
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 22px;
+
+}
+
+/* end */
+#slider {
+	width: 96%;
+	margin-left: 2%;
+
+	background-color: #fff;
+	position: fixed;
+	left: 0;
+	bottom: 10px;
+	z-index: 100;
+	border-radius: 6px;
+	padding: 20px 15px;
+	box-sizing: border-box;
+
+}
+
+.slider-title {
+	width: 100%;
+	font-size: 15px;
+	font-weight: 500;
+
+
+}
+
+.slider-box {
+	width: 100%;
+	padding: 0 10p x 0 0;
+	box-sizing: border-box;
+	margin-top: 20px;
+	display: flex;
+	align-items: center;
+
+}
+
+.slider-btn {
+	width: 100%;
+	height: 40px;
+	color: #fff;
+	background-color: darkcyan;
+	font-size: 15px;
+	font-weight: 500;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 5px;
+	margin-top: 30px;
+}
+
+.custom-button {
+	width: 26px;
+	color: #fff;
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 25px;
+	text-align: center;
+	background-color: darkcyan;
+	border-radius: 100px;
+}
+
+#search-box {
+	height: 30px;
+	width: 93%;
+	position: fixed;
+	padding: 5px;
+	font-size: 16px;
+	border-radius: 4px;
+	border: 1px solid #ccc;
+	box-shadow: 0px 1px 3px #ddd;
+	left: 2%;
+	top: 80px;
+	font-size: 12px;
+}
+
+/* 定位图标 */
+.pos {
+	width: 36px;
+	height: 36px;
+	position: fixed;
+	right: 10px;
+	bottom: 180px;
+	z-index: 100;
+	padding: 6px;
+	box-sizing: border-box;
+	border-radius: 5px;
+	background-color: #fff;
+}
+
+.citys {
+	width: 96%;
+	position: fixed;
+	left: 2%;
+	top: 130px;
+	font-size: 12px;
+	background-color: #fff;
+	padding: 5px 10px;
+	box-sizing: border-box;
+	border-radius: 5px;
+}
+
+.bx {
+	width: 100%;
+	background-color: #f5f5f5;
+	position: fixed;
+	left: 0;
+	bottom: 0;
+	z-index: 1000;
+}
+
+.bxt {
+	width: 100%;
+	background-color: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 15px;
+	box-sizing: border-box;
+}
+
+.bxtl {
+	flex: 1;
+	background-color: #f5f5f5;
+	border-radius: 5px;
+	padding: 5px 10px;
+	box-sizing: border-box;
+}
+
+.inp {
+	background-color: #f5f5f5;
+	font-size: 13px;
+	width: 100%;
+	padding: 5px 0;
+	box-sizing: border-box;
+	color: #999;
+}
+
+.bxtr {
+	font-size: 14px;
+	font-weight: 500;
+	margin-left: 15px;
+
+}
+
+.tips {
+	width: 100%;
+	padding: 0 15px 15px 15px;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	background-color: #fff;
+}
+
+.tip1 {
+	font-size: 14px;
+	font-weight: 500;
+}
+
+.tip2 {
+	font-size: 12px;
+	font-weight: 400;
+	color: #999;
+	margin-left: 20px;
+}
+
+
+.fun {
+	width: 100%;
+	padding: 20px 50px 25px 50px;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background-color: #fff;
+}
+
+.funl {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+
+}
+
+.fun1 {
+	width: 100%;
+	text-align: center;
+
+}
+
+.fun1 img {
+	width: 15px;
+	height: 15px;
+	margin-left: 5px;
+}
+
+.fun1 span {
+	font-size: 14px;
+	font-weight: 500;
+	color: #666;
+}
+
+.fun2 {
+	width: 100%;
+	text-align: center;
+	font-size: 14px;
+	font-weight: 500;
+	margin-top: 10px;
+}
+
+
+
+
+
+.confir {
+	width: 90%;
+	height: 40px;
+	border: 1px solid #4e6ef2;
+	background-color: #4e6ef2;
+	color: #fff;
+	font-size: 15px;
+	font-weight: 500;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 40px;
+	position: fixed;
+	left: 5%;
+	bottom: 10vh;
+}
+
+.btnbox {
+	width: 100%;
+	padding: 20px 15px;
+	box-sizing: border-box;
+}
+
+.btn {
+	width: 100%;
+	height: 40px;
+	border: 1px solid #4e6ef2;
+	background-color: #4e6ef2;
+	color: #fff;
+	font-size: 15px;
+	font-weight: 500;
+	line-height: 40px;
+	text-align: center;
+	border-radius: 5px;
+
+}
+
+.cancel {
+	width: 100%;
+	height: 40px;
+	border: 1px solid #40485b;
+	background-color: #40485b;
+	color: #fff;
+	font-size: 15px;
+	font-weight: 500;
+	line-height: 40px;
+	text-align: center;
+	border-radius: 5px;
+	display: none;
+
+}
+
+
+
+
+.bfun {
+	width: 100%;
+	padding: 10px 40px 5px 40px;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background-color: #fff;
+
+}
+
+.bfunl {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+
+}
+
+.bfun1 img {
+	width: 15px;
+	height: 15px;
+	margin-left: 5px;
+}
+
+.bfun1 span {
+	font-size: 14px;
+	font-weight: 500;
+	color: #666;
+}
+
+.bfun2 {
+	width: 100%;
+	text-align: center;
+	font-size: 14px;
+	font-weight: 500;
+	margin-top: 10px;
+}
+/* 新增样式 */
+.floatingLayer{
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	position: absolute;
+	bottom: 30px;
+	justify-content: space-around;
+}
+.button_style{
+	background-color: rgb(169, 169, 169);
+	font-size: 14px;
+	padding: 5px 10px;
+	color: #fff;
+	border-radius: 5px;
+	display: none;
+}
+/* 悬浮按钮容器 */
+.floatingLayer {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  position: absolute;
+  bottom: 30px;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 15px;
+  box-sizing: border-box;
+  z-index: 101;
+}
+.trajectoryLayer{
+    position: absolute;
+    bottom: 150px;
+    right: 15px;
+    z-index: 101;
+    padding: 10px 16px;
+    background-color: #1E90FF;
+    border-radius: 50px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    font-size: 14px;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* 默认通用按钮 */
+.button_style {
+  font-size: 14px;
+  padding: 9px 14px;
+  color: #fff;
+  border-radius: 50px;
+  display: none;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+/* 归还车辆 - 绿色 */
+#btnReturn {
+  background: linear-gradient(135deg, #00b894, #00a885);
+}
+
+/* 开锁、关锁 - 蓝色主色 */
+#btn3, #btn1 {
+  background: linear-gradient(135deg, #4e6ef2, #3a5ce2);
+}
+
+/* 寻车、查看照片 - 橙色 */
+#btn5, #btnSee {
+  background: linear-gradient(135deg, #ffa726, #ff9800);
+}
+
+/* 风控拦截 - 红色警示 */
+#btn8 {
+  background: linear-gradient(135deg, #ff4757, #ff3742);
+}
+
+/* 取消拦截 - 灰色 */
+#btn6 {
+  background: linear-gradient(135deg, #747d8c, #5f6777);
+}
+
+/* 交互效果 */
+.button_style:hover {
+  transform: translateY(-2px);
+  opacity: 0.95;
+}
+.button_style:active {
+  transform: translateY(0);
+}

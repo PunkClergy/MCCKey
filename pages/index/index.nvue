@@ -1,0 +1,380 @@
+<template>
+	<view class="container" @touchmove.prevent>
+		<!-- 自定义导航栏 -->
+		<view class="custom-header" :style="{ paddingTop: statusBarHeight + 'px' }">
+			<view class="header-wrapper">
+				<view class="header-left">
+					<text class="header-title">智车钥</text>
+				</view>
+				<view class="header-right">
+					<text class="header-action-btn" @click="goToUserPage">
+						{{ isLogin ? '个人中心' : '请登录' }}
+					</text>
+				</view>
+			</view>
+		</view>
+
+		<!-- WebView 容器 -->
+		<view class="web-view-wrapper">
+			<web-view
+				ref="webview"
+				@onPostMessage="handleWebMessage"
+				:src="webViewUrl"
+				:style="{ height: webViewHeight + 'px' }"
+			></web-view>
+		</view>
+	</view>
+</template>
+
+<script>
+import { info_screen } from '@/utils/scheme/screen.js'
+import {
+	u_getControlCodeByMobile,
+	u_getCarPoisitonByCode,
+	u_operation
+} from '@/api'
+import { deviceDetector } from '@/utils/ToolClass.js'
+import 'url-search-params-polyfill'
+
+// 常量配置
+const DATA_SEND_DELAY = 2000
+const NAV_BAR_HEIGHT = {
+	ios: 49,
+	android: 44,
+	default: 44
+}
+const HEADER_TOTAL_HEIGHT = 80
+
+export default {
+	data() {
+		return {
+			screenInfo: {},
+			pageTimestamp: Date.now(),
+			vehicleInfo: {},
+			vehicleDataList: [],
+			sendDataTimer: null,
+			storageData: {},
+			isLogin: false
+		}
+	},
+
+	computed: {
+		// 带时间戳的 WebView 地址（防止缓存）
+		webViewUrl() {
+			return `/hybrid/html/sendKey.html?nowTime=${this.pageTimestamp}`
+		},
+		// 状态栏高度
+		statusBarHeight() {
+			return this.screenInfo.statusBarHeight || 0
+		},
+		// 导航栏高度
+		navBarHeight() {
+			return NAV_BAR_HEIGHT[this.screenInfo.platform] || NAV_BAR_HEIGHT.default
+		},
+		// WebView 可用高度
+		webViewHeight() {
+			return (this.screenInfo.screenHeight || 0) - HEADER_TOTAL_HEIGHT
+		}
+	},
+
+	onLoad() {
+		this.initScreenInfo()
+		this.loadLocalStorage()
+	},
+
+	async onShow() {
+		try {
+			this.pageTimestamp = Date.now()
+			await this.getCarControlCode()
+			this.initDeviceInfo()
+			this.checkLoginStatus()
+		} catch (error) {
+			console.error('页面初始化失败：', error)
+			uni.showToast({ title: '数据加载失败', icon: 'none' })
+		}
+	},
+
+	onUnload() {
+		this.clearDataSendTimer()
+	},
+
+	methods: {
+		/** 跳转登录/个人中心 */
+		goToUserPage() {
+			const routeMethod = this.isLogin ? 'navigateTo' : 'redirectTo'
+			const targetUrl = this.isLogin ? '/pages/userCenter/index' : '/pages/login/index'
+			uni[routeMethod]({ url: targetUrl })
+		},
+
+		/** 加载本地所有缓存数据 */
+		loadLocalStorage() {
+			const storageKeys = uni.getStorageInfoSync().keys
+			const allStorage = {}
+			storageKeys.forEach(key => {
+				allStorage[key] = uni.getStorageSync(key)
+			})
+			this.storageData = allStorage
+		},
+
+		/** 检查登录状态 */
+		checkLoginStatus() {
+			uni.getStorage({
+				key: 'userKey',
+				success: res => {
+					this.isLogin = !!res.data && typeof res.data === 'object'
+				},
+				fail: () => {
+					this.isLogin = false
+				}
+			})
+		},
+
+		/** 初始化屏幕信息 */
+		async initScreenInfo() {
+			try {
+				this.screenInfo = await info_screen()
+			} catch (error) {
+				console.error('获取屏幕信息失败：', error)
+			}
+		},
+
+		/** 初始化设备信息（小程序/App 适配） */
+		initDeviceInfo() {
+			try {
+				const device = deviceDetector.getDeviceInfo()
+				if (device.isMiniProgram && device.isWechatMini) {
+					this.initMiniProgramSystem()
+				} else if (device.isApp && device.isAndroid) {
+					this.initAndroidSystem()
+				} else if (device.isApp && device.isIOS) {
+					this.initIosSystem()
+				}
+			} catch (error) {
+				console.error('设备信息初始化失败：', error)
+			}
+		},
+
+		/** 初始化小程序系统参数 */
+		initMiniProgramSystem() {
+			try {
+				const systemInfo = uni.getSystemInfoSync()
+				const statusBarHeight = systemInfo.statusBarHeight || 0
+				const menuButton = uni.getMenuButtonBoundingClientRect?.() || {}
+
+				Object.assign(this, {
+					screen_width: systemInfo.screenWidth || 0,
+					screen_height: systemInfo.screenHeight || 0,
+					height_from_head: statusBarHeight,
+					head_height: menuButton.height
+						? statusBarHeight + menuButton.height + (menuButton.top - statusBarHeight) * 2
+						: statusBarHeight + 44,
+					capsule_distance_to_the_right: systemInfo.screenWidth - (menuButton.right || systemInfo.screenWidth - 16),
+					capsule_top: menuButton.top || 0,
+					capsule_left: menuButton.left || 0,
+					capsule_width: menuButton.width || 0,
+					capsule_height: menuButton.height || 0,
+					capsule_right: menuButton.right || 0
+				})
+			} catch (error) {
+				console.error('小程序系统参数初始化失败：', error)
+			}
+		},
+
+		/** 初始化 Android 系统参数 */
+		initAndroidSystem() {
+			try {
+				const systemInfo = uni.getSystemInfoSync()
+				const statusBarHeight = systemInfo.statusBarHeight || 0
+				const navBarHeight = 48
+
+				Object.assign(this, {
+					screen_width: systemInfo.screenWidth || 0,
+					screen_height: systemInfo.screenHeight || 0,
+					height_from_head: statusBarHeight,
+					head_height: statusBarHeight + navBarHeight,
+					capsule_distance_to_the_right: 16,
+					capsule_top: statusBarHeight + 8,
+					capsule_left: systemInfo.screenWidth - 120,
+					capsule_width: 80,
+					capsule_height: 32,
+					capsule_right: systemInfo.screenWidth - 16
+				})
+			} catch (error) {
+				console.error('Android 系统参数初始化失败：', error)
+			}
+		},
+
+		/** 初始化 iOS 系统参数 */
+		initIosSystem() {
+			try {
+				const systemInfo = uni.getSystemInfoSync()
+				const statusBarHeight = systemInfo.statusBarHeight || 20
+				const navBarHeight = 44
+
+				Object.assign(this, {
+					screen_width: systemInfo.screenWidth || 0,
+					screen_height: systemInfo.screenHeight || 0,
+					height_from_head: statusBarHeight,
+					head_height: statusBarHeight + navBarHeight,
+					capsule_distance_to_the_right: 16,
+					capsule_top: statusBarHeight + 6,
+					capsule_left: systemInfo.screenWidth - 110,
+					capsule_width: 88,
+					capsule_height: 34,
+					capsule_right: systemInfo.screenWidth - 16
+				})
+			} catch (error) {
+				console.error('iOS 系统参数初始化失败：', error)
+			}
+		},
+
+		/** 获取车辆控制码 */
+		async getCarControlCode() {
+			const res = await u_getControlCodeByMobile({
+				mobile: this.storageData?.userKey?.mobile
+			})
+			await this.getCarLocation(res?.content)
+		},
+
+		/** 获取车辆实时位置 */
+		async getCarLocation(controlCodeList) {
+			try {
+				if (!controlCodeList?.length) return
+				const res = await u_getCarPoisitonByCode({
+					code: controlCodeList[0]?.controlcode
+				})
+				this.vehicleDataList = [res.content]
+				this.vehicleInfo = res?.content || {}
+				this.sendDataToWebView()
+			} catch (error) {
+				console.error('获取车辆位置失败：', error)
+			}
+		},
+
+		/** 延迟发送车辆数据到 WebView */
+		sendDataToWebView() {
+			const currentLang = uni.getStorageSync('lang') || 'zh-CN'
+			this.clearDataSendTimer()
+
+			this.sendDataTimer = setTimeout(() => {
+				this.postWebViewMessage({
+					type: 'elctrncky',
+					payload: this.vehicleDataList,
+					vehicle_info: this.vehicleInfo,
+					lang: currentLang
+				})
+			}, DATA_SEND_DELAY)
+		},
+
+		/** 清除发送定时器 */
+		clearDataSendTimer() {
+			if (this.sendDataTimer) {
+				clearTimeout(this.sendDataTimer)
+				this.sendDataTimer = null
+			}
+		},
+
+		/** 向 WebView 发送消息 */
+		postWebViewMessage(data) {
+			const payload = JSON.stringify(data)
+			const jsStr = `window.postMessage(${payload}, '*')`
+
+			// #ifdef APP-PLUS
+			this.$refs.webview?.evalJS(jsStr)
+			// #endif
+
+			// #ifdef H5
+			const iframe = document.querySelector('web-view iframe')
+			iframe?.contentWindow?.postMessage(data, '*')
+			// #endif
+		},
+
+		/** 接收 WebView 发来的消息 */
+		handleWebMessage(event) {
+			const messageData = event?.detail?.data?.[0] || {}
+			const { source } = messageData
+			if (!source) return
+			this.controlCar(source)
+		},
+
+		/** 执行车辆控制指令 */
+		async controlCar(controlType) {
+			try {
+				const res = await u_operation({
+					sn: this.vehicleInfo?.sn,
+					operationType: controlType,
+					_timestamp: Date.now()
+				})
+				uni.showToast({ title: res.msg, icon: 'none' })
+			} catch (error) {
+				console.error('车辆控制失败：', error)
+			}
+		}
+	}
+}
+</script>
+
+<style scoped>
+	.container {
+		width: 750rpx;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		background-size: cover;
+	}
+
+	.custom-header {
+		width: 750rpx;
+		height: 80px;
+		background: #fff;
+		border-bottom: 1rpx solid #eee;
+		box-sizing: content-box;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.header-wrapper {
+		width: 700rpx;
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: flex-end;
+	}
+
+	.header-left {
+		display: flex;
+		align-items: center;
+	}
+
+	.header-right {
+		border-radius: 25px;
+		border: 1rpx solid #f1f1f1;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background-color: #FFFFFF;
+		width: 80px;
+		height: 30px;
+		min-width: 80px;
+		min-height: 30px;
+		flex-shrink: 0;
+	}
+
+	.header-title {
+		color: #333;
+		font-weight: 600;
+		font-size: 20px;
+	}
+
+	.header-action-btn {
+		color: #333;
+		font-size: 14px;
+		min-width: 60px;
+		text-align: center;
+	}
+
+	.web-view-wrapper {
+		width: 750rpx;
+	}
+</style>

@@ -1,7 +1,7 @@
 import {
 	http
 } from '@/utils/request/http'
-
+export const u_getAllCarPoisiton = (data) => http.get('/carapi/getAllCarPoisiton', data)//替换
 export const u_getCarPoisitonByCode = (data) => http.postFormData('/renterApi/getCarPoisitonByCode', data)
 export const u_getCarPoisitonByCodeNew = (data) => http.postFormData('/renterApi/getCarPoisitonByCodeNew', data)
 export const u_verifyControlcode = (data) => http.postFormData('/renterApi/verifyControlcode', data)
