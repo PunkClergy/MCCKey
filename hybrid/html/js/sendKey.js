@@ -294,21 +294,39 @@ document.getElementById('btn5').addEventListener('click', () => {
 		}
 	});
 });
-document.getElementById('btn8').addEventListener('click', () => {
+document.getElementById('bluetooth').addEventListener('click', () => {
 	uni.postMessage({
 		data: {
-			source: 8,
+			source: 111,
 			payload: info
 		}
 	});
 });
-document.getElementById('btn6').addEventListener('click', () => {
+document.getElementById('wifi').addEventListener('click', () => {
 	uni.postMessage({
 		data: {
-			source: 6,
+			source: 112,
 			payload: info
 		}
 	});
 });
+// WiFi / 蓝牙 切换逻辑
+const wifiItem = document.getElementById('wifi');
+const bluetoothItem = document.getElementById('bluetooth');
+
+// 默认激活第一个（WiFi）
+wifiItem.classList.add('active');
+
+function toggleImg(activeItem) {
+	// 全部取消激活
+	wifiItem.classList.remove('active');
+	bluetoothItem.classList.remove('active');
+	// 激活当前点击的
+	activeItem.classList.add('active');
+}
+
+// 绑定事件
+wifiItem.addEventListener('click', () => toggleImg(wifiItem));
+bluetoothItem.addEventListener('click', () => toggleImg(bluetoothItem));
 
 window.initMap = initMap;
