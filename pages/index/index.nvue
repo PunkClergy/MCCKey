@@ -55,7 +55,7 @@
 				sendDataTimer: null,
 				storageData: {},
 				isLogin: false,
-				executionType: 111
+				executionType: 'wifi'
 			}
 		},
 
@@ -302,6 +302,7 @@
 				const {
 					source
 				} = messageData;
+				console.log('3332323', source)
 				if (!source) return;
 				const sourceHandlerMap = {
 					1: this.controlCar,
@@ -317,7 +318,7 @@
 			},
 			/** 执行车辆控制指令 */
 			async controlCar(controlType) {
-				if (this.executionType == 111) {
+				if (this.executionType == 'bluetooth') {
 					// 蓝牙
 				} else {
 					try {
