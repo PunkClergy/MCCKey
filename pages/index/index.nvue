@@ -35,7 +35,7 @@
 		deviceDetector
 	} from '@/utils/ToolClass.js'
 	import 'url-search-params-polyfill'
-
+	import bleManager from '@/utils/ble-manager.js'
 	// 常量配置
 	const DATA_SEND_DELAY = 2000
 	const NAV_BAR_HEIGHT = {
@@ -316,27 +316,68 @@
 			handleNetworkBluetoothSwitching(evt) {
 				this.executionType = evt
 			},
+			bleSendData: function(sendType) {
+				console.log(sendType, '8888')
+				uni.showLoading({
+					title: '加载中...',
+					mask: true
+				});
+				bleManager.sendData('19856020072', '7F7F7910B2A2F5B0', sendType, function(state) {
+					const msgMap = {
+						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_ADAPTER_UNAVAILABLE]: '请打开蓝牙',
+						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_NOT_FOUND]: '没有发现设备',
+						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_CONNECT_FAILED]: '蓝牙连接失败',
+						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_UNSUPPORTED]: '您的手机不支持低功耗蓝牙',
+						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_SEND_FAILED]: '数据发送失败',
+						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_NO_RESPONSE]: '设备超时无响应'
+					};
+					if (msgMap[state]) {
+						uni.hideLoading();
+						uni.showModal({
+							title: '提示',
+							content: msgMap[state],
+							showCancel: false
+						});
+					} else if (bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_ERROR == state) {
+						uni.hideLoading();
+					}
+				}, function(data) {
+					console.log('111112222', data)
+					uni.hideLoading();
+					uni.showToast({
+						title: '操作成功',
+						icon: 'none'
+					});
+				});
+			},
 			/** 执行车辆控制指令 */
 			async controlCar(controlType) {
-				if (this.executionType == 'bluetooth') {
-					// 蓝牙
-				} else {
-					try {
-						const res = await u_operation({
-							sn: this.vehicleInfo?.sn,
-							operationType: controlType,
-							_timestamp: Date.now()
-						})
-						uni.showToast({
-							title: res.msg,
-							icon: 'none'
-						})
-					} catch (error) {
-						console.error('车辆控制失败：', error)
+				console.log(controlType)
+				const strategy = {
+					bluetooth: () => {
+						const cmd = bleManager.DEFAULT_CMD_TYPE;
+						controlType == 3 && this.bleSendData(cmd.CONTROL_OPEN_DOOR_POWER_TYPE);
+						controlType == 1 && this.bleSendData(cmd.CONTROL_OPEN_DOOR_TYPE);
+						controlType == 5 && this.bleSendData(cmd.CONTROL_REMOTE_LOOK_FOR_CAR_TYPE);
+					},
+					default: async () => {
+						try {
+							const res = await u_operation({
+								sn: this.vehicleInfo?.sn,
+								operationType: controlType,
+								_timestamp: Date.now()
+							});
+							uni.showToast({
+								title: res.msg,
+								icon: 'none'
+							});
+						} catch (e) {
+							console.error('车辆控制失败：', e)
+						}
 					}
-				}
-
-			}
+				};
+				await (this.executionType === 'bluetooth' ? strategy.bluetooth() : strategy.default());
+			},
 		}
 	}
 </script>
