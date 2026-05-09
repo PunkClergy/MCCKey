@@ -322,7 +322,7 @@
 					title: '加载中...',
 					mask: true
 				});
-				bleManager.sendData('19856020072', '7F7F7910B2A2F5B0', sendType, function(state) {
+				bleManager.sendData(this.vehicleInfo?.idc, this.vehicleInfo?.blueKey, sendType, function(state) {
 					const msgMap = {
 						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_ADAPTER_UNAVAILABLE]: '请打开蓝牙',
 						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_NOT_FOUND]: '没有发现设备',
