@@ -2,7 +2,8 @@
 	"pages": [{
 			"path": "pages/index/index",
 			"style": {
-				"navigationBarTitleText": "智车钥"
+				"navigationBarTitleText": "智车钥",
+				"navigationBarBackgroundColor": "#EFF1FC"
 			}
 		},
 		{
