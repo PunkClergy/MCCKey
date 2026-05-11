@@ -16,18 +16,18 @@ let vehicle_info = {};
 // 多语言配置（仅保留 5 个按钮）
 const buttonTexts = {
 	'en-US': {
-		btnReturn: "Return",
-		btn3: "Unlock",
-		btn1: "Lock",
-		btn5: "Locate",
-		btnSee: "Photos"
+		btnReturnText: "Return",
+		btn3Text: "Unlock",
+		btn1Text: "Lock",
+		btn5Text: "Locate",
+		btnSeeText: "Photos"
 	},
 	'zh-CN': {
-		btnReturn: "归还车辆",
-		btn3: "开锁",
-		btn1: "关锁",
-		btn5: "寻车",
-		btnSee: "查看照片"
+		btnReturnText: "归还车辆",
+		btn3Text: "开锁",
+		btn1Text: "关锁",
+		btn5Text: "寻车",
+		btnSeeText: "查看照片"
 	}
 };
 
@@ -42,11 +42,11 @@ window.addEventListener('message', (e) => {
 		}
 	}
 
-	const langData = buttonTexts[e.data.lang] || buttonTexts['zh-CN'];
-	Object.entries(langData).forEach(([id, text]) => {
-		const el = document.getElementById(id);
-		if (el) el.innerText = text;
-	});
+	// const langData = buttonTexts[e.data.lang] || buttonTexts['zh-CN'];
+	// Object.entries(langData).forEach(([id, text]) => {
+	// 	const el = document.getElementById(id);
+	// 	if (el) el.innerText = text;
+	// });
 });
 
 // ====================== 地图初始化 ======================

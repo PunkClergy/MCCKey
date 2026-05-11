@@ -252,6 +252,7 @@
 					})
 					this.vehicleDataList = [res.content]
 					this.vehicleInfo = res?.content || {}
+					this.controlcode = controlCodeList[0]?.controlcode
 					this.sendDataToWebView()
 				} catch (error) {
 					console.error('获取车辆位置失败：', error)
@@ -302,7 +303,6 @@
 				const {
 					source
 				} = messageData;
-				console.log('3332323', source)
 				if (!source) return;
 				const sourceHandlerMap = {
 					1: this.controlCar,
@@ -362,11 +362,17 @@
 					},
 					default: async () => {
 						try {
+							uni.showLoading({
+								title: '加载中...',
+								mask: true
+							});
 							const res = await u_operation({
 								sn: this.vehicleInfo?.sn,
 								operationType: controlType,
+								code: this.controlcode,
 								_timestamp: Date.now()
 							});
+							uni.hideLoading()
 							uni.showToast({
 								title: res.msg,
 								icon: 'none'
