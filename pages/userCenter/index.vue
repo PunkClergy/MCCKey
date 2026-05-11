@@ -117,11 +117,12 @@
 				const SUCCESS_CODE = 1000;
 				const MIN_CONTENT_LENGTH = 2;
 				if (code === SUCCESS_CODE && Array.isArray(content) && content.length >= MIN_CONTENT_LENGTH) {
-					this.contentList = [{
-							icon: '/static/images/contact.png',
-							handleEvent: 'vehicles',
-							text: '切换车辆'
-						},
+					this.contentList = [
+						// {
+						// 	icon: '/static/images/contact.png',
+						// 	handleEvent: 'vehicles',
+						// 	text: '切换车辆'
+						// },
 						...this.contentList,
 					];
 					this.carList = content
@@ -252,7 +253,7 @@
 						url: '/pages/login/index'
 					}),
 					signOut: () => this.logout(),
-					vehicles:()=>this.handleSwitchVehicles()
+					vehicles: () => this.handleSwitchVehicles()
 				};
 				actionMap[item.handleEvent]?.();
 			},
