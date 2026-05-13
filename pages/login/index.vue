@@ -5,63 +5,39 @@
 			<view class="logo-container fade-in">
 				<view class="logo-wrapper">
 					<image :src="logoSrc" class="logo-img" mode="aspectFit" />
-					<text class="logo-text">智信通wiselink</text>
+					<text class="logo-text">{{tips.footInfo[lang]}}</text>
 				</view>
-				<text class="slogan">智信通汽车出行技术服务运营提供商</text>
-			</view>
-
-			<!-- 登录方式选择 -->
-			<view class="radio-container" >
-				<radio-group class="radio-group" @change="radioChange">
-					<label class="radio-label" v-if="hardware">
-						<radio value="1" checked color="#4cd964" class="radio-item" />
-						<text class="radio-text">手机号登录</text>
-					</label>
-					<label class="radio-label" v-else>
-						<radio value="2" color="#4cd964" class="radio-item" />
-						<text class="radio-text">账号密码登录</text>
-					</label>
-				</radio-group>
 			</view>
 
 			<!-- 账号密码登录 -->
 			<view class="form-container" v-if="type==2">
 				<view class="input-group">
 					<view class="input-item">
-						<view class="input-label">账号</view>
-						<input class="input-field" placeholder='请输入账号或手机号' @input='e=>account_value=e.detail.value' />
+						<view class="input-label">{{tips.Account[lang]}}</view>
+						<input class="input-field" :placeholder='tips.EnterAccountOrPhone[lang]'
+							@input='e=>account_value=e.detail.value' />
 					</view>
 					<view class="input-item">
-						<view class="input-label">密码</view>
-						<input class="input-field" placeholder='请输入密码' @input='e=>password_value=e.detail.value'
-							password />
+						<view class="input-label">{{tips.Password[lang]}}</view>
+						<input class="input-field" :placeholder='tips.EnterPassword[lang]'
+							@input='e=>password_value=e.detail.value' password />
 
 					</view>
 					<view @tap="handleAccountLogin">
-						<button class="login-btn">登录</button>
-						<text class="login-tip">账号为登录后设定，无账号请使用微信登录</text>
+						<button class="login-btn">{{tips.Login[lang]}}</button>
 					</view>
 				</view>
 			</view>
 
-			<!-- 手机号快捷登录 -->
-			<view class="wx-login-container" hover-class="button-hover" v-else>
-				<button class="wx-login-btn" open-type="getPhoneNumber" hover-class="btn_tapcolor"
-					@getphonenumber="handlePhoneQuickLogin">手机号快捷登录</button>
-			</view>
 		</view>
 
 		<!-- 信息展示区域 -->
 		<view class="info-area">
 			<view class="info-card">
-				<text class="product-name">智车钥</text>
-				<view class="desc-text">手机汽车电子钥匙：不怕丢失、性价比高、可魔变多把钥匙，支持分享授权使用；</view>
-				<view class="desc-text">请点击 / 长按识别二维码，下载官方 APP！</view>
-				<view class="qr-container">
-					<image :src="init_qr_code" class="qr-img" @tap="handlePreviewImage" mode="widthFix" />
-				</view>
+				<text class="product-name">{{tips.footInfo[lang]}}</text>
+				<view class="desc-text">{{tips.ServiceIntro[lang]}}</view>
 				<view class="contact-info">
-					<text class="company-name">智信通·中国北京</text>
+					<text class="company-name">{{tips.footInfo[lang]}}</text>
 				</view>
 			</view>
 		</view>
@@ -78,15 +54,22 @@
 		u_wxLogin,
 		u_login
 	} from '@/api';
-
+	import {
+		titles
+	} from '@/utils/langtitle.js'
+	import {
+		tips
+	} from '@/utils/langtips.js'
 	export default {
 		name: 'LoginPage',
 		data() {
 			return {
+				tips: tips,
+				lang: 'znCh',
 				account_value: "",
 				password_value: "",
 				openId: '',
-				type: 1,
+				type: 2,
 				init_qr_code: '',
 				c_link: 'https://k1sw.wiselink.net.cn/',
 				logoSrc: '/assets/images/logo.png',
@@ -105,6 +88,11 @@
 			this.initLogo();
 			this.initQrCode();
 			this.InitDetermineEquipment()
+			this.lang = uni.getStorageSync('language') || 'zhCn'
+			const pageRoute = 'login/index'
+			uni.setNavigationBarTitle({
+				title: titles[pageRoute][this.lang]
+			})
 		},
 		methods: {
 			/************************ 基础通用方法 ************************/
@@ -141,10 +129,7 @@
 				}
 			},
 
-			// 切换登录方式
-			radioChange(e) {
-				this.type = e.detail.value;
-			},
+
 
 			/************************ 手机号快捷登录（独立模块） ************************/
 			// 手机号快捷登录入口
@@ -200,7 +185,7 @@
 			validateAccountForm() {
 				if (!this.account_value) {
 					uni.showToast({
-						title: '请输入账号',
+						title: this.tips.EnterAccountOrPhone[this.lang],
 						icon: 'none',
 						duration: 2000
 					});
@@ -209,7 +194,7 @@
 
 				if (!this.password_value) {
 					uni.showToast({
-						title: '请输入密码',
+						title: this.tips.EnterPassword[this.lang],
 						icon: 'none',
 						duration: 2000
 					});
@@ -258,7 +243,7 @@
 			// 账号密码登录-接口请求
 			requestAccountLogin() {
 				uni.showLoading({
-					title: '正在加载中…',
+					title: this.tips.Loading[this.lang],
 					mask: true
 				});
 
@@ -282,7 +267,8 @@
 			// 显示登录错误提示
 			showLoginError(message) {
 				uni.showModal({
-					title: '提示',
+					title: this.tips.Tip[this.lang],
+					confirmText: this.tips.Confirm[this.lang],
 					content: message,
 					showCancel: false
 				});

@@ -32,14 +32,22 @@
 		u_logo,
 		u_getControlCodeByMobile
 	} from '@/api';
+	import {
+		titles
+	} from '@/utils/langtitle.js'
+	import {
+		tips
+	} from '@/utils/langtips.js'
 	import 'url-search-params-polyfill';
 	export default {
 		name: 'UserCenter',
 		data() {
 			return {
+				tips: tips,
+				lang: 'zhCn',
 				// 基础配置
 				tabBarHeight: 80,
-				servicePhone: '400-090-5050',
+				servicePhone: '+86 400-090-5050',
 				baseUrl: 'https://k1sw.wiselink.net.cn/',
 
 				// 响应式数据
@@ -60,6 +68,11 @@
 						icon: '/static/images/contact.png',
 						handleEvent: 'contactUs',
 						text: '联系智信通'
+					},
+					{
+						icon: '/static/images/setUp.png',
+						handleEvent: 'language',
+						text: '语言设置'
 					},
 					{
 						icon: '/static/images/out.png',
@@ -93,9 +106,34 @@
 		},
 		onShow() {
 			this.init();
+			this.langSet()
+
 
 		},
 		methods: {
+			langSet() {
+				this.lang = uni.getStorageSync('language') || 'zhCn'
+				const pageRoute = 'userCenter/index'
+				uni.setNavigationBarTitle({
+					title: titles[pageRoute][this.lang]
+				})
+				this.contentList = [{
+						icon: '/static/images/contact.png',
+						handleEvent: 'contactUs',
+						text: this.tips.ContactZhitongxin[this.lang]
+					},
+					{
+						icon: '/static/images/setUp.png',
+						handleEvent: 'language',
+						text: this.tips.LanguageSettings[this.lang]
+					},
+					{
+						icon: '/static/images/out.png',
+						handleEvent: 'signOut',
+						text: this.tips.Logout[this.lang]
+					}
+				]
+			},
 			async initCodeByMobile() {
 				const userStorage = uni.getStorageSync('userKey') || {};
 				const mobile = userStorage.mobile || '';
@@ -195,10 +233,10 @@
 			// 拨打电话（封装复用）
 			callPhone(phone) {
 				uni.showModal({
-					title: '拨打电话',
-					content: `是否拨打客服电话：${phone}`,
-					confirmText: '拨打',
-					cancelText: '取消',
+					title: this.tips.CallPhone[this.lang],
+					content: `${this.tips.IsCallServicePhone[this.lang]} ${phone}`,
+					confirmText: this.tips.Call[this.lang],
+					cancelText: this.tips.Cancel[this.lang],
 					success: (res) => {
 						if (res.confirm) {
 							uni.makePhoneCall({
@@ -225,8 +263,10 @@
 			// 退出登录（封装复用）
 			logout() {
 				uni.showModal({
-					title: '提示',
-					content: '确定退出登录吗？',
+					title: this.tips.Tip[this.lang],
+					content: this.tips.ConfirmLogout[this.lang],
+					confirmText: this.tips.Confirm[this.lang],
+					cancelText: this.tips.Cancel[this.lang],
 					success: (res) => {
 						if (res.confirm) {
 							try {
@@ -235,10 +275,6 @@
 									url: '/pages/index/index'
 								});
 							} catch (e) {
-								uni.showToast({
-									title: '退出失败',
-									icon: 'none'
-								});
 							}
 						}
 					}
@@ -253,11 +289,44 @@
 						url: '/pages/login/index'
 					}),
 					signOut: () => this.logout(),
-					vehicles: () => this.handleSwitchVehicles()
+					vehicles: () => this.handleSwitchVehicles(),
+					language: () => this.handleLanguage()
 				};
 				actionMap[item.handleEvent]?.();
 			},
+			handleLanguage() {
+				const langList = [{
+						name: '中文',
+						value: 'zhCn'
+					},
+					{
+						name: 'English',
+						value: 'enUs'
+					},
+					// {
+					// 	name: 'にほんご',
+					// 	value: 'jaJp'
+					// }
+				]
+				uni.showActionSheet({
+					itemList: langList.map(item => item.name),
+					success: async (res) => {
+						const {
+							name,
+							value
+						} = langList[res.tapIndex]
 
+						uni.setStorageSync('language', value)
+						this.lang = value
+
+						const pageRoute = 'userCenter/index'
+						uni.setNavigationBarTitle({
+							title: titles[pageRoute][value]
+						})
+						this.langSet()
+					}
+				})
+			},
 			// 处理切换车辆逻辑，展示车辆列表弹窗，选择后跳转至对应车辆首页
 			async handleSwitchVehicles() {
 				const carList = this.carList || [];

@@ -1,8 +1,8 @@
 // ====================== 全局变量 ======================
-let currentLat = '';    // 当前位置纬度
-let currentLng = '';    // 当前位置经度
-const zoom = 18;        // 地图缩放比例
-let meMarker = null;    // 个人位置标记点
+let currentLat = ''; // 当前位置纬度
+let currentLng = ''; // 当前位置经度
+const zoom = 18; // 地图缩放比例
+let meMarker = null; // 个人位置标记点
 const currentLocationImg = 'https://k3a.wiselink.net.cn/img/app/currentLocation.png';
 let markers = [];
 let lastClickedMarker = null;
@@ -15,19 +15,23 @@ let vehicle_info = {};
 
 // 多语言配置（仅保留 5 个按钮）
 const buttonTexts = {
-	'en-US': {
-		btnReturnText: "Return",
-		btn3Text: "Unlock",
-		btn1Text: "Lock",
-		btn5Text: "Locate",
-		btnSeeText: "Photos"
+	'enUs': {
+		btnReturnLang: "Return",
+		btn3Lang: "Unlock",
+		btn1Lang: "Lock",
+		btn5Lang: "Locate",
+		btnSeeLang: "Photos",
+		btn8Lang: "Block",
+		btn6Lang: "Unblock"
 	},
-	'zh-CN': {
-		btnReturnText: "归还车辆",
-		btn3Text: "开锁",
-		btn1Text: "关锁",
-		btn5Text: "寻车",
-		btnSeeText: "查看照片"
+	'zhCn': { // 假设中文标识为 zh-CN
+		btnReturnLang: "归还车辆",
+		btn3Lang: "开锁",
+		btn1Lang: "关锁",
+		btn5Lang: "寻车",
+		btnSeeLang: "送车拍照",
+		btn8Lang: "风控拦截",
+		btn6Lang: "取消拦截"
 	}
 };
 
@@ -41,12 +45,11 @@ window.addEventListener('message', (e) => {
 			createMarkers();
 		}
 	}
-
-	// const langData = buttonTexts[e.data.lang] || buttonTexts['zh-CN'];
-	// Object.entries(langData).forEach(([id, text]) => {
-	// 	const el = document.getElementById(id);
-	// 	if (el) el.innerText = text;
-	// });
+	const langData = buttonTexts[e.data.lang] || buttonTexts['zhCn'];
+	Object.entries(langData).forEach(([id, text]) => {
+		const el = document.getElementById(id);
+		if (el) el.innerText = text;
+	});
 });
 
 // ====================== 地图初始化 ======================
@@ -63,7 +66,10 @@ function initMap() {
 
 			map = new google.maps.Map(document.getElementById('map'), {
 				zoom,
-				center: { lat: currentLat, lng: currentLng },
+				center: {
+					lat: currentLat,
+					lng: currentLng
+				},
 				animation: 'BOUNCE'
 			});
 
@@ -77,8 +83,7 @@ function initMap() {
 		(fail) => {
 			console.error('获取位置失败:', fail);
 			alert('获取位置失败，请检查定位权限');
-		},
-		{
+		}, {
 			enableHighAccuracy: true,
 			timeout: 5000
 		}
@@ -88,7 +93,10 @@ function initMap() {
 // ====================== 设置自身定位标记 ======================
 function setMePositioning() {
 	meMarker = new google.maps.Marker({
-		position: { lat: currentLat, lng: currentLng },
+		position: {
+			lat: currentLat,
+			lng: currentLng
+		},
 		icon: {
 			url: currentLocationImg,
 			scaledSize: new google.maps.Size(50, 50)
@@ -110,7 +118,10 @@ function createMarkers() {
 		}
 
 		const marker = new google.maps.Marker({
-			position: { lat: item.latitude, lng: item.longitude },
+			position: {
+				lat: item.latitude,
+				lng: item.longitude
+			},
 			title: item.plateNumber,
 			icon: {
 				url: 'https://k3a.wiselink.net.cn/img/app/g_location.png',
@@ -226,23 +237,47 @@ function clearMarkers() {
 
 // ====================== 按钮事件绑定 ======================
 document.getElementById('btn1').addEventListener('click', () => {
-	uni.postMessage({ data: { source: 1 } });
+	uni.postMessage({
+		data: {
+			source: 1
+		}
+	});
 });
 
 document.getElementById('btn3').addEventListener('click', () => {
-	uni.postMessage({ data: { source: 3, payload: info } });
+	uni.postMessage({
+		data: {
+			source: 3,
+			payload: info
+		}
+	});
 });
 
 document.getElementById('btn5').addEventListener('click', () => {
-	uni.postMessage({ data: { source: 5, payload: info } });
+	uni.postMessage({
+		data: {
+			source: 5,
+			payload: info
+		}
+	});
 });
 
 document.getElementById('bluetooth').addEventListener('click', () => {
-	uni.postMessage({ data: { source: 'bluetooth', payload: info } });
+	uni.postMessage({
+		data: {
+			source: 'bluetooth',
+			payload: info
+		}
+	});
 });
 
 document.getElementById('wifi').addEventListener('click', () => {
-	uni.postMessage({ data: { source: 'wifi', payload: info } });
+	uni.postMessage({
+		data: {
+			source: 'wifi',
+			payload: info
+		}
+	});
 });
 
 // ====================== WiFi / 蓝牙 切换 ======================

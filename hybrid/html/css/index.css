@@ -9,7 +9,8 @@
 	outline: none !important;
 }
 
-html,body {
+html,
+body {
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
@@ -75,12 +76,15 @@ html,body {
 .img-item img:nth-child(1) {
 	display: block;
 }
+
 .img-item img:nth-child(2) {
 	display: none;
 }
+
 .img-item.active img:nth-child(1) {
 	display: none;
 }
+
 .img-item.active img:nth-child(2) {
 	display: block;
 }
@@ -117,11 +121,29 @@ html,body {
 #btn3 img,
 #btn1 img,
 #btn5 img,
-#btnSee img{
+#btn8 img,
+#btn6 img,
+#btnSee img {
 	width: 33px;
 	height: 27px;
 }
 
 .button_style:active {
 	transform: translateY(0);
+}
+
+.trajectoryLayer {
+	position: absolute;
+	bottom: 150px;
+	right: 15px;
+	z-index: 101;
+	padding: 10px 16px;
+	background-color: #1E90FF;
+	border-radius: 50px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+	font-size: 14px;
+	color: #fff;
+	border: none;
+	cursor: pointer;
+	user-select: none;
 }
