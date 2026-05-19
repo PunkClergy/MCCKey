@@ -2,9 +2,9 @@
     "name" : "WiseLink Auto Ride",
     "appid" : "__UNI__0192300",
     "description" : "",
-    "versionName" : "260515",
+    "versionName" : "1.0.0",
     "package" : "com2.example.myapp",
-    "versionCode" : 260515,
+    "versionCode" : 260519,
     "transformPx" : false,
     "app-plus" : {
         /* 5+App特有相关 */
@@ -34,6 +34,12 @@
             /* 应用发布信息 */
             "android" : {
                 "networkSecurityConfig" : true,
+                "abiFilters" : [
+                    "arm64-v8a" // 仅保留 64 位
+                ],
+                "targetSdkVersion" : 35,
+                "compileSdkVersion" : 35,
+                "minSdkVersion" : 35,
                 "package" : "com.example.myapp",
                 /* android打包配置 */
                 "permissions" : [

@@ -89,11 +89,11 @@
 		onLoad() {
 			this.initScreenInfo()
 			this.loadLocalStorage()
-			this.langSet()
+
 		},
 
 		async onShow() {
-
+			this.langSet()
 			this.sendDataToWebView()
 			try {
 				this.pageTimestamp = Date.now()
