@@ -1,159 +1,147 @@
 {
-	"name": "WiseLink Auto Ride",
-	"appid": "__UNI__0192300",
-	"description": "",
-	"versionName": "1.0.0",
-	"package": "com2.example.myapp",
-	"versionCode": 260519,
-	"transformPx": false,
-	"locale": "auto",
-	"app-plus": {
-		"usingComponents": true,
-		"nvueCompiler": "uni-app",
-		"nvueStyleCompiler": "uni-app",
-		"splashscreen": {
-			"alwaysShowBeforeRender": true,
-			"waiting": true,
-			"autoclose": true,
-			"delay": 0
-		},
-		"modules": {
-			"Maps": {},
-			"Geolocation": {},
-			"Bluetooth": {},
-			"Barcode": {},
-			"Camera": {},
-			"FaceID": {},
-			"FacialRecognitionVerify": {},
-			"Fingerprint": {},
-			"Share": {},
-			"OAuth": {}
-		},
-		"distribute": {
-			"android": {
-				"networkSecurityConfig": true,
-				"abiFilters": ["arm64-v8a"],
-				"targetSdkVersion": 35,
-				"compileSdkVersion": 35,
-				"minSdkVersion": 35,
-				"package": "com.example.myapp",
-				"permissions": [
-					"<uses-permission android:name=\"android.permission.CHANGE_NETWORK_STATE\"/>",
-					"<uses-permission android:name=\"android.permission.MOUNT_UNMOUNT_FILESYSTEMS\"/>",
-					"<uses-permission android:name=\"android.permission.VIBRATE\"/>",
-					"<uses-permission android:name=\"android.permission.ACCESS_WIFI_STATE\"/>",
-					"<uses-feature android:name=\"android.hardware.camera.autofocus\"/>",
-					"<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",
-					"<uses-permission android:name=\"android.permission.CAMERA\"/>",
-					"<uses-permission android:name=\"android.permission.CHANGE_WIFI_STATE\"/>",
-					"<uses-permission android:name=\"android.permission.WAKE_LOCK\"/>",
-					"<uses-permission android:name=\"android.permission.FLASHLIGHT\"/>",
-					"<uses-feature android:name=\"android.hardware.camera\"/>",
-					"<uses-permission android:name=\"android.permission.WRITE_SETTINGS\"/>",
-					"<uses-permission android:name=\"android.permission.INTERNET\"/>",
-					"<uses-permission android:name=\"android.permission.BLUETOOTH\"/>",
-					"<uses-permission android:name=\"android.permission.BLUETOOTH_ADMIN\"/>",
-					"<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>",
-					"<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\"/>",
-					"<uses-permission android:name=\"android.permission.BLUETOOTH_SCAN\"/>",
-					"<uses-permission android:name=\"android.permission.BLUETOOTH_CONNECT\"/>"
-				]
-			},
-			"ios": {
-				"dSYMs": false,
-				"devices": "iphone",
-				"privacyDescription": {
-					"NSUserTrackingUsageDescription": "Used to identify devices and improve advertising experience.",
-					"NSLocationAlwaysAndWhenInUseUsageDescription": "Access location information to provide users with the distance to their vehicle.",
-					"NSLocationAlwaysUsageDescription": "Access location information to provide users with the distance to their vehicle.",
-					"NSLocationWhenInUseUsageDescription": "Access location information to provide users with the distance to their vehicle.",
-					"NSPhotoLibraryUsageDescription": "Access the photo album for user photo selection and upload.",
-					"NSPhotoLibraryAddUsageDescription": "Access the photo album for user photo selection and upload.",
-					"NSCameraUsageDescription": "Access the camera for user photo capture and upload.",
-					"NSBluetoothPeripheralUsageDescription": "Request Bluetooth permissions for user-controlled vehicle connectivity via Bluetooth.",
-					"NSBluetoothAlwaysUsageDescription": "Request Bluetooth permissions for user-controlled vehicle connectivity via Bluetooth.",
-					"NSFaceIDUsageDescription": "Used for Face ID authentication."
-				}
-			},
-			"sdkConfigs": {
-				"maps": {
-					"tencent": {
-						"key": "W66BZ-ADBC3-COB3F-YWZG4-MAVRO-IJBIM"
-					}
-				},
-				"geolocation": {
-					"tencent": {
-						"__platform__": ["ios", "android"],
-						"apikey_ios": "W66BZ-ADBC3-COB3F-YWZG4-MAVRO-IJBIM",
-						"apikey_android": "W66BZ-ADBC3-COB3F-YWZG4-MAVRO-IJBIM"
-					}
-				},
-				"share": {},
-				"oauth": {}
-			},
-			"icons": {
-				"ios": {
-					"iphone": {
-						"app@2x": "unpackage/res/icons/120x120.png",
-						"app@3x": "unpackage/res/icons/180x180.png",
-						"spotlight@2x": "unpackage/res/icons/80x80.png",
-						"notification@2x": "unpackage/res/icons/40x40.png",
-						"notification@3x": "unpackage/res/icons/60x60.png",
-						"settings@2x": "unpackage/res/icons/58x58.png",
-						"settings@3x": "unpackage/res/icons/87x87.png",
-						"spotlight@3x": "unpackage/res/icons/120x120.png"
-					},
-					"appstore": "unpackage/res/icons/1024x1024.png",
-					"ipad": {
-						"app": "unpackage/res/icons/76x76.png",
-						"app@2x": "unpackage/res/icons/152x152.png",
-						"notification": "unpackage/res/icons/20x20.png",
-						"notification@2x": "unpackage/res/icons/40x40.png",
-						"proapp@2x": "unpackage/res/icons/167x167.png",
-						"settings": "unpackage/res/icons/29x29.png",
-						"settings@2x": "unpackage/res/icons/58x58.png",
-						"spotlight": "unpackage/res/icons/40x40.png",
-						"spotlight@2x": "unpackage/res/icons/80x80.png"
-					}
-				},
-				"android": {
-					"hdpi": "unpackage/res/icons/72x72.png",
-					"xhdpi": "unpackage/res/icons/96x96.png",
-					"xxhdpi": "unpackage/res/icons/144x144.png",
-					"xxxhdpi": "unpackage/res/icons/192x192.png"
-				}
-			}
-		}
-	},
-	"quickapp": {},
-	"mp-weixin": {
-		"appid": "wxaa499434fc3a524b",
-		"permission": {
-			"scope.userLocation": {
-				"desc": "你的位置信息用于定位当前位置，展示附近服务"
-			}
-		},
-		"requiredPrivateInfos": ["getLocation"],
-		"setting": {
-			"urlCheck": false,
-			"es6": true,
-			"postcss": true,
-			"minified": true
-		},
-		"usingComponents": true
-	},
-	"vueVersion": "3",
-	"h5": {
-		"router": {
-			"base": "",
-			"mode": "hash"
-		},
-		"sdkConfigs": {
-			"maps": {
-				"tencent": {
-					"key": "W66BZ-ADBC3-COB3F-YWZG4-MAVRO-IJBIM"
-				}
-			}
-		}
-	}
+    "name" : "WiseLink Auto Ride",
+    "appid" : "__UNI__0192300",
+    "description" : "",
+    "versionName" : "1.0.0",
+    "package" : "com2.example.myapp",
+    "versionCode" : 260519,
+    "transformPx" : false,
+    "locale" : "auto",
+    "app-plus" : {
+        "usingComponents" : true,
+        "nvueCompiler" : "uni-app",
+        "nvueStyleCompiler" : "uni-app",
+        "splashscreen" : {
+            "alwaysShowBeforeRender" : true,
+            "waiting" : true,
+            "autoclose" : true,
+            "delay" : 0
+        },
+        "modules" : {
+            "Bluetooth" : {},
+            "Barcode" : {},
+            "Camera" : {}
+        },
+        "distribute" : {
+            "android" : {
+                "networkSecurityConfig" : true,
+                "abiFilters" : [ "arm64-v8a" ],
+                "targetSdkVersion" : 35,
+                "compileSdkVersion" : 35,
+                "minSdkVersion" : 24,
+                "package" : "com.example.myapp",
+                "permissions" : [
+                    "<uses-permission android:name=\"android.permission.CHANGE_NETWORK_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.VIBRATE\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_WIFI_STATE\"/>",
+                    "<uses-feature android:name=\"android.hardware.camera.autofocus\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.CAMERA\"/>",
+                    "<uses-permission android:name=\"android.permission.CHANGE_WIFI_STATE\"/>",
+                    "<uses-permission android:name=\"android.permission.WAKE_LOCK\"/>",
+                    "<uses-permission android:name=\"android.permission.FLASHLIGHT\"/>",
+                    "<uses-feature android:name=\"android.hardware.camera\"/>",
+                    "<uses-permission android:name=\"android.permission.INTERNET\"/>",
+                    "<uses-permission android:name=\"android.permission.BLUETOOTH\"/>",
+                    "<uses-permission android:name=\"android.permission.BLUETOOTH_ADMIN\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\"/>",
+                    "<uses-permission android:name=\"android.permission.BLUETOOTH_SCAN\"/>",
+                    "<uses-permission android:name=\"android.permission.BLUETOOTH_CONNECT\"/>"
+                ]
+            },
+            "ios" : {
+                "dSYMs" : false,
+                "devices" : "iphone",
+                "privacyRegisterMode" : "manual",
+                "pushRegisterMode" : "manual",
+                "permissions" : {
+                    "phoneState" : {
+                        "request" : "none",
+                        "prompt" : "Used for device security verification."
+                    },
+                    "notification" : {
+                        "request" : "none"
+                    }
+                },
+                "privacyDescription" : {
+                    "NSLocationAlwaysAndWhenInUseUsageDescription" : "Used to obtain your location and display the distance to your vehicle.",
+                    "NSLocationAlwaysUsageDescription" : "Used to obtain your location and display the distance to your vehicle.",
+                    "NSLocationWhenInUseUsageDescription" : "Used to obtain your location and display the distance to your vehicle.",
+                    "NSPhotoLibraryUsageDescription" : "Used to select and upload photos.",
+                    "NSPhotoLibraryAddUsageDescription" : "Used to save photos to your album.",
+                    "NSCameraUsageDescription" : "Used to take photos and upload images.",
+                    "NSBluetoothPeripheralUsageDescription" : "Used to connect and communicate with your vehicle via Bluetooth.",
+                    "NSBluetoothAlwaysUsageDescription" : "Used to connect and communicate with your vehicle via Bluetooth."
+                },
+                "idfa" : false
+            },
+            "sdkConfigs" : {
+                "maps" : {},
+                "geolocation" : {
+                    "tencent" : {
+                        "__platform__" : [ "ios", "android" ],
+                        "apikey_ios" : "W66BZ-ADBC3-COB3F-YWZG4-MAVRO-IJBIM",
+                        "apikey_android" : "W66BZ-ADBC3-COB3F-YWZG4-MAVRO-IJBIM"
+                    }
+                }
+            },
+            "icons" : {
+                "ios" : {
+                    "iphone" : {
+                        "app@2x" : "unpackage/res/icons/120x120.png",
+                        "app@3x" : "unpackage/res/icons/180x180.png",
+                        "spotlight@2x" : "unpackage/res/icons/80x80.png",
+                        "notification@2x" : "unpackage/res/icons/40x40.png",
+                        "notification@3x" : "unpackage/res/icons/60x60.png",
+                        "settings@2x" : "unpackage/res/icons/58x58.png",
+                        "settings@3x" : "unpackage/res/icons/87x87.png",
+                        "spotlight@3x" : "unpackage/res/icons/120x120.png"
+                    },
+                    "appstore" : "unpackage/res/icons/1024x1024.png",
+                    "ipad" : {
+                        "app" : "unpackage/res/icons/76x76.png",
+                        "app@2x" : "unpackage/res/icons/152x152.png",
+                        "notification" : "unpackage/res/icons/20x20.png",
+                        "notification@2x" : "unpackage/res/icons/40x40.png",
+                        "proapp@2x" : "unpackage/res/icons/167x167.png",
+                        "settings" : "unpackage/res/icons/29x29.png",
+                        "settings@2x" : "unpackage/res/icons/58x58.png",
+                        "spotlight" : "unpackage/res/icons/40x40.png",
+                        "spotlight@2x" : "unpackage/res/icons/80x80.png"
+                    }
+                },
+                "android" : {
+                    "hdpi" : "unpackage/res/icons/72x72.png",
+                    "xhdpi" : "unpackage/res/icons/96x96.png",
+                    "xxhdpi" : "unpackage/res/icons/144x144.png",
+                    "xxxhdpi" : "unpackage/res/icons/192x192.png"
+                }
+            }
+        }
+    },
+    "quickapp" : {},
+    "mp-weixin" : {
+        "appid" : "wxaa499434fc3a524b",
+        "permission" : {
+            "scope.userLocation" : {
+                "desc" : "你的位置信息用于定位当前位置，展示附近服务"
+            }
+        },
+        "requiredPrivateInfos" : [ "getLocation" ],
+        "setting" : {
+            "urlCheck" : false,
+            "es6" : true,
+            "postcss" : true,
+            "minified" : true
+        },
+        "usingComponents" : true
+    },
+    "vueVersion" : "3",
+    "h5" : {
+        "router" : {
+            "base" : "",
+            "mode" : "hash"
+        }
+    }
 }

@@ -7,7 +7,7 @@
         },
         {
             "customPlaygroundType" : "local",
-            "playground" : "custom",
+            "playground" : "standard",
             "type" : "uni-app:app-ios"
         }
     ]
