@@ -70,7 +70,7 @@
 						text: '联系智信通'
 					},
 					{
-						icon: '/static/images/setUp.png',
+						icon: '/static/images/setup.png',
 						handleEvent: 'language',
 						text: '语言设置'
 					},
@@ -123,7 +123,7 @@
 						text: this.tips.ContactZhitongxin[this.lang]
 					},
 					{
-						icon: '/static/images/setUp.png',
+						icon: '/static/images/setup.png',
 						handleEvent: 'language',
 						text: this.tips.LanguageSettings[this.lang]
 					},

@@ -6,8 +6,8 @@
 	"package": "com2.example.myapp",
 	"versionCode": 260519,
 	"transformPx": false,
+	"locale": "auto",
 	"app-plus": {
-		/* 5+App特有相关 */
 		"usingComponents": true,
 		"nvueCompiler": "uni-app",
 		"nvueStyleCompiler": "uni-app",
@@ -29,30 +29,22 @@
 			"Share": {},
 			"OAuth": {}
 		},
-		/* 模块配置 */
 		"distribute": {
-			/* 应用发布信息 */
 			"android": {
 				"networkSecurityConfig": true,
-				"abiFilters": [
-					"arm64-v8a" // 仅保留 64 位
-				],
+				"abiFilters": ["arm64-v8a"],
 				"targetSdkVersion": 35,
 				"compileSdkVersion": 35,
 				"minSdkVersion": 35,
 				"package": "com.example.myapp",
-				/* android打包配置 */
 				"permissions": [
 					"<uses-permission android:name=\"android.permission.CHANGE_NETWORK_STATE\"/>",
 					"<uses-permission android:name=\"android.permission.MOUNT_UNMOUNT_FILESYSTEMS\"/>",
 					"<uses-permission android:name=\"android.permission.VIBRATE\"/>",
-					"<uses-permission android:name=\"android.permission.READ_LOGS\"/>",
 					"<uses-permission android:name=\"android.permission.ACCESS_WIFI_STATE\"/>",
 					"<uses-feature android:name=\"android.hardware.camera.autofocus\"/>",
 					"<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",
 					"<uses-permission android:name=\"android.permission.CAMERA\"/>",
-					"<uses-permission android:name=\"android.permission.GET_ACCOUNTS\"/>",
-					"<uses-permission android:name=\"android.permission.READ_PHONE_STATE\"/>",
 					"<uses-permission android:name=\"android.permission.CHANGE_WIFI_STATE\"/>",
 					"<uses-permission android:name=\"android.permission.WAKE_LOCK\"/>",
 					"<uses-permission android:name=\"android.permission.FLASHLIGHT\"/>",
@@ -63,14 +55,15 @@
 					"<uses-permission android:name=\"android.permission.BLUETOOTH_ADMIN\"/>",
 					"<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>",
 					"<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\"/>",
-					"<uses-permission android:name=\"android.permission.BLUETOOTH_SCAN\" />",
-					"<uses-permission android:name=\"android.permission.BLUETOOTH_CONNECT\" />"
+					"<uses-permission android:name=\"android.permission.BLUETOOTH_SCAN\"/>",
+					"<uses-permission android:name=\"android.permission.BLUETOOTH_CONNECT\"/>"
 				]
 			},
 			"ios": {
 				"dSYMs": false,
+				"devices": "iphone",
 				"privacyDescription": {
-					"NSUserTrackingUsageDescription": "This permission is used to identify the device and improve advertising experience. No personal data will be collected.",
+					"NSUserTrackingUsageDescription": "Used to identify devices and improve advertising experience.",
 					"NSLocationAlwaysAndWhenInUseUsageDescription": "Access location information to provide users with the distance to their vehicle.",
 					"NSLocationAlwaysUsageDescription": "Access location information to provide users with the distance to their vehicle.",
 					"NSLocationWhenInUseUsageDescription": "Access location information to provide users with the distance to their vehicle.",
@@ -78,10 +71,10 @@
 					"NSPhotoLibraryAddUsageDescription": "Access the photo album for user photo selection and upload.",
 					"NSCameraUsageDescription": "Access the camera for user photo capture and upload.",
 					"NSBluetoothPeripheralUsageDescription": "Request Bluetooth permissions for user-controlled vehicle connectivity via Bluetooth.",
-					"NSBluetoothAlwaysUsageDescription": "Request Bluetooth permissions for user-controlled vehicle connectivity via Bluetooth."
+					"NSBluetoothAlwaysUsageDescription": "Request Bluetooth permissions for user-controlled vehicle connectivity via Bluetooth.",
+					"NSFaceIDUsageDescription": "Used for Face ID authentication."
 				}
 			},
-			/* ios打包配置 */
 			"sdkConfigs": {
 				"maps": {
 					"tencent": {
@@ -132,11 +125,8 @@
 			}
 		}
 	},
-	/* SDK配置 */
 	"quickapp": {},
-	/* 快应用特有相关 */
 	"mp-weixin": {
-		/* 小程序特有相关 */
 		"appid": "wxaa499434fc3a524b",
 		"permission": {
 			"scope.userLocation": {
@@ -165,8 +155,5 @@
 				}
 			}
 		}
-	},
-	"locale": "auto"
+	}
 }
-/* android打包配置 */
-/* ios打包配置 */

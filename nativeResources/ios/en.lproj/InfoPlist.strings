@@ -1,0 +1,19 @@
+NSLocationAlwaysAndWhenInUseUsageDescription = "Access location information to provide users with the distance to their vehicle.";
+
+NSLocationAlwaysUsageDescription = "Access location information to provide users with the distance to their vehicle.";
+
+NSLocationWhenInUseUsageDescription = "Access location information to provide users with the distance to their vehicle.";
+
+NSPhotoLibraryUsageDescription = "Access the photo album for user photo selection and upload.";
+
+NSPhotoLibraryAddUsageDescription = "Access the photo album for user photo selection and upload.";
+
+NSCameraUsageDescription = "Access the camera for user photo capture and upload.";
+
+NSBluetoothPeripheralUsageDescription = "Request Bluetooth permissions for user-controlled vehicle connectivity via Bluetooth.";
+
+NSBluetoothAlwaysUsageDescription = "Request Bluetooth permissions for user-controlled vehicle connectivity via Bluetooth.";
+
+NSFaceIDUsageDescription = "Used for Face ID authentication.";
+
+NSUserTrackingUsageDescription = "Used to identify devices and improve advertising experience.";
