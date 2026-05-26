@@ -323,16 +323,31 @@
 
 			/** 向 WebView 发送消息 */
 			postWebViewMessage(data) {
-				const payload = JSON.stringify(data)
-				const jsStr = `window.postMessage(${payload}, '*')`
 
+				const jsCode = `
+							window.receiveAppData(
+								${JSON.stringify(data)}
+							)
+						`
+
+				// APP
 				// #ifdef APP-PLUS
-				this.$refs.webview?.evalJS(jsStr)
+
+				this.$refs.webview?.evalJS(jsCode)
+
 				// #endif
 
+				// H5
 				// #ifdef H5
-				const iframe = document.querySelector('web-view iframe')
-				iframe?.contentWindow?.postMessage(data, '*')
+
+				const iframe =
+					document.querySelector(
+						'web-view iframe'
+					)
+
+				iframe?.contentWindow
+					?.receiveAppData(data)
+
 				// #endif
 			},
 
