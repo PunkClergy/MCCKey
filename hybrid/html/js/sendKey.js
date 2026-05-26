@@ -1,671 +1,444 @@
-// ====================== 全局变量 ======================
+// ====================== 全局常量 ======================
+const DEFAULT_ZOOM = 18;
+const CURRENT_LOCATION_ICON = 'https://k3a.wiselink.net.cn/img/app/currentLocation.png';
+const VEHICLE_MARKER_ICON = 'https://k3a.wiselink.net.cn/img/app/g_location.png';
+const GOOGLE_API_KEY = 'AIzaSyDGzLnrbvfiqdmemX8yR4CTc6n2SzjOaBM';
+const DEFAULT_LANG = 'zhCn';
 
+// ====================== 全局状态变量 ======================
 let currentLat = '';
 let currentLng = '';
+let userLocationMarker = null;
+let vehicleMarkers = [];
+let lastActiveMarker = null;
+let vehicleList = [];
+let mapInstance = null;
+let isMapReady = false;
+let isFirstRender = true;
+let currentVehicleInfo = {};
+let currentLang = DEFAULT_LANG;
+let activeCustomPopup = null;
 
-const zoom = 18;
-
-let meMarker = null;
-
-const currentLocationImg =
-	'https://k3a.wiselink.net.cn/img/app/currentLocation.png';
-
-let markers = [];
-
-let lastClickedMarker = null;
-
-let info = [];
-
-let map = null;
-
-let isMapInitialized = false;
-
-let isFirstLoad = true;
-
-let vehicle_info = {};
-
-let lang = 'zhCn';
-
-let currentCustomPopup = null;
-
-// ====================== 多语言 ======================
-
-const buttonTexts = {
-
-	'enUs': {
-
-		btnReturnLang: "Return",
-
-		btn3Lang: "Unlock",
-
-		btn1Lang: "Lock",
-
-		btn5Lang: "Locate",
-
-		btnSeeLang: "Photos",
-
-		btn8Lang: "Block",
-
-		btn6Lang: "Unblock",
-
-		AuthTime: "Auth Time"
+// ====================== 多语言配置 ======================
+const localeTexts = {
+	enUs: {
+		btnReturnLang: 'Return',
+		btn3Lang: 'Unlock',
+		btn1Lang: 'Lock',
+		btn5Lang: 'Locate',
+		btnSeeLang: 'Photos',
+		btn8Lang: 'Block',
+		btn6Lang: 'Unblock',
+		AuthTime: 'Auth Time'
 	},
-
-	'zhCn': {
-
-		btnReturnLang: "归还车辆",
-
-		btn3Lang: "开锁",
-
-		btn1Lang: "关锁",
-
-		btn5Lang: "寻车",
-
-		btnSeeLang: "送车拍照",
-
-		btn8Lang: "风控拦截",
-
-		btn6Lang: "取消拦截",
-
-		AuthTime: "授权时间"
+	zhCn: {
+		btnReturnLang: '归还车辆',
+		btn3Lang: '开锁',
+		btn1Lang: '关锁',
+		btn5Lang: '寻车',
+		btnSeeLang: '送车拍照',
+		btn8Lang: '风控拦截',
+		btn6Lang: '取消拦截',
+		AuthTime: '授权时间'
 	}
 };
 
-// ====================== 接收 APP 数据
-// ======================
-
+// ====================== APP 通信 ======================
+/**
+ * 接收 APP 传递的数据
+ * @param {Object} data - APP 传入的参数
+ */
 window.receiveAppData = function(data) {
-
-	console.log('收到APP数据')
-
-	console.log(data)
-
-	// ======================
 	// 车辆数据
-	// ======================
-
 	if (data.type === 'elctrncky') {
+		vehicleList = data.payload || [];
+		currentVehicleInfo = data.vehicle_info || {};
+		currentLang = data.lang || DEFAULT_LANG;
 
-		info = data.payload || [];
-
-		vehicle_info = data.vehicle_info || {};
-
-		lang = data.lang || 'zhCn';
-
-		if (isMapInitialized) {
-
-			createMarkers();
+		if (isMapReady) {
+			renderVehicleMarkers();
 		}
 	}
 
-	// ======================
 	// 用户信息
-	// ======================
-
 	if (data.type === 'userInfo') {
-
-		console.log('用户信息')
-
-		console.log(data.userInfo)
+		console.log('用户信息:', data.userInfo);
 	}
 
-	updateLangText();
+	updatePageLocale();
 };
 
-// ====================== 更新语言
-// ======================
-
-function updateLangText() {
-
-	const langData =
-		buttonTexts[lang] || buttonTexts['zhCn'];
-
-	Object.entries(langData).forEach(([id, text]) => {
-
-		const el = document.getElementById(id);
-
-		if (el) {
-
-			el.innerText = text;
-		}
-	});
-}
-
-// ====================== 主动请求用户信息
-// ======================
-
-function requestUserInfo() {
-
+/**
+ * 主动向 APP 请求用户信息
+ */
+function requestUserInfoFromApp() {
 	uni.postMessage({
-
 		data: {
-
 			type: 'getUserInfo'
 		}
 	});
 }
 
-// ====================== 地图初始化
-// ======================
+// ====================== 多语言更新 ======================
+/**
+ * 更新页面所有多语言文本
+ */
+function updatePageLocale() {
+	const langData = localeTexts[currentLang] || localeTexts[DEFAULT_LANG];
 
+	Object.entries(langData).forEach(([elementId, text]) => {
+		const element = document.getElementById(elementId);
+		if (element) element.innerText = text;
+	});
+}
+
+// ====================== 地图核心 ======================
+/**
+ * 初始化谷歌地图
+ */
 function initMap() {
-
 	if (!navigator.geolocation) {
-
-		alert('不支持定位');
-
+		alert('当前设备不支持定位功能');
 		return;
 	}
 
 	navigator.geolocation.getCurrentPosition(
-
 		(position) => {
-
 			currentLat = position.coords.latitude;
-
 			currentLng = position.coords.longitude;
 
-			map = new google.maps.Map(
-				document.getElementById('map'),
-
-				{
-					zoom,
-
-					center: {
-
-						lat: currentLat,
-
-						lng: currentLng
-					}
+			// 创建地图实例
+			mapInstance = new google.maps.Map(document.getElementById('map'), {
+				zoom: DEFAULT_ZOOM,
+				center: {
+					lat: currentLat,
+					lng: currentLng
 				}
-			);
+			});
 
-			setMePositioning();
+			renderUserLocationMarker();
+			isMapReady = true;
 
-			isMapInitialized = true;
+			// 已有车辆数据则直接渲染
+			if (vehicleList.length) renderVehicleMarkers();
 
-			if (info.length) {
+			// 点击地图空白处关闭弹窗
+			mapInstance.addListener('click', closeCustomPopup);
 
-				createMarkers();
-			}
-
-			map.addListener('click', closeCustomPopup);
-
-			requestUserInfo();
+			// 请求用户信息
+			requestUserInfoFromApp();
 		},
-
 		() => {
-
-			alert('定位失败');
+			alert('定位失败，请开启定位权限');
 		}
 	);
 }
 
-// ====================== 自身定位 marker
-// ======================
-
-function setMePositioning() {
-
-	meMarker = new google.maps.Marker({
-
+/**
+ * 渲染自身定位图标
+ */
+function renderUserLocationMarker() {
+	userLocationMarker = new google.maps.Marker({
 		position: {
-
 			lat: currentLat,
-
 			lng: currentLng
 		},
-
 		icon: {
-
-			url: currentLocationImg,
-
+			url: CURRENT_LOCATION_ICON,
 			scaledSize: new google.maps.Size(50, 50)
 		},
-
-		map
+		map: mapInstance
 	});
 }
 
-// ====================== 创建 marker
-// ======================
+// ====================== 车辆标记点 ======================
+/**
+ * 清空所有车辆标记
+ */
+function clearAllVehicleMarkers() {
+	vehicleMarkers.forEach(marker => marker.setMap(null));
+	vehicleMarkers = [];
+	closeCustomPopup();
+}
 
-async function createMarkers() {
+/**
+ * 解析经纬度为地址
+ */
+async function resolveAddress(lat, lng) {
+	try {
+		const mapLang = currentLang.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+		const url =
+			`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_API_KEY}&language=${mapLang}`;
 
-	clearMarkers();
+		const res = await fetch(url);
+		const data = await res.json();
 
-	const GOOGLE_API_KEY =
-		'AIzaSyDGzLnrbvfiqdmemX8yR4CTc6n2SzjOaBM';
+		if (data.status === 'OK' && data.results.length) {
+			return data.results[0].formatted_address;
+		}
+	} catch (err) {
+		console.error('地址解析失败:', err);
+	}
+	return '地址获取失败';
+}
 
-	const Markerlang = lang
-		.replace(/([a-z])([A-Z])/g, '$1-$2')
-		.toLowerCase();
+/**
+ * 渲染所有车辆标记
+ */
+async function renderVehicleMarkers() {
+	clearAllVehicleMarkers();
 
-	for (let i = 0; i < info.length; i++) {
-
-		const item = info[i];
-
+	for (const item of vehicleList) {
 		if (!item?.latitude || !item?.longitude) continue;
 
-		let address = 'Loading...';
+		const address = await resolveAddress(item.latitude, item.longitude);
 
-		// ======================
-		// 地址解析
-		// ======================
-
-		try {
-
-			const res = await fetch(
-
-				`https://maps.googleapis.com/maps/api/geocode/json?latlng=${item.latitude},${item.longitude}&key=${GOOGLE_API_KEY}&language=${Markerlang}`
-			);
-
-			const data = await res.json();
-
-			if (
-				data.status === 'OK' &&
-				data.results.length
-			) {
-
-				address =
-					data.results[0].formatted_address;
-			}
-
-		} catch (e) {
-
-			console.log(e);
-		}
-
-		// ======================
-		// marker
-		// ======================
-
+		// 创建车辆 marker
 		const marker = new google.maps.Marker({
-
 			position: {
-
 				lat: item.latitude,
-
 				lng: item.longitude
 			},
-
 			title: item.plateNumber,
-
 			icon: {
-
-				url:
-					'https://k3a.wiselink.net.cn/img/app/g_location.png',
-
-				scaledSize:
-					new google.maps.Size(17, 36)
+				url: VEHICLE_MARKER_ICON,
+				scaledSize: new google.maps.Size(17, 36)
 			},
-
 			address,
-
 			startDate: item?.startDate,
-
 			endDate: item?.endDate,
-
 			sn: item.sn,
-
 			plateNumber: item.plateNumber,
-
-			map
+			map: mapInstance
 		});
 
-		markers.push(marker);
-
-		bindMarkerClick(marker);
+		vehicleMarkers.push(marker);
+		bindMarkerClickEvent(marker);
 	}
 
-	// ======================
-	// 首次自动打开车辆
-	// ======================
-
-	if (isFirstLoad && markers.length) {
-
-		openMatchingMarker();
-
-		isFirstLoad = false;
+	// 首次加载自动定位匹配车辆
+	if (isFirstRender && vehicleMarkers.length) {
+		autoOpenMatchedVehicleMarker();
+		isFirstRender = false;
 	}
 }
 
-// ====================== 自动定位当前车辆
-// ======================
+/**
+ * 自动打开匹配 SN 的车辆弹窗
+ */
+function autoOpenMatchedVehicleMarker() {
+	if (!currentVehicleInfo?.sn) return;
 
-function openMatchingMarker() {
-
-	if (!vehicle_info?.sn) return;
-
-	const m = markers.find(
-
-		mm => String(mm.sn) === String(vehicle_info.sn)
+	const targetMarker = vehicleMarkers.find(
+		marker => String(marker.sn) === String(currentVehicleInfo.sn)
 	);
 
-	if (m) {
-
-		map.panTo(m.getPosition());
-
+	if (targetMarker) {
+		mapInstance.panTo(targetMarker.getPosition());
 		setTimeout(() => {
-
-			google.maps.event.trigger(m, 'click');
-
+			google.maps.event.trigger(targetMarker, 'click');
 		}, 500);
 	}
 }
 
-// ====================== marker 点击
-// ======================
-
-function bindMarkerClick(marker) {
-
+// ====================== Marker 交互 ======================
+/**
+ * 绑定 Marker 点击事件
+ */
+function bindMarkerClickEvent(marker) {
 	marker.addListener('click', () => {
-
 		closeCustomPopup();
 
-		// ======================
-		// bounce 动画
-		// ======================
-
-		if (lastClickedMarker) {
-
-			lastClickedMarker.setAnimation(null);
+		// 上一个 marker 停止动画
+		if (lastActiveMarker) {
+			lastActiveMarker.setAnimation(null);
 		}
 
-		marker.setAnimation(
-			google.maps.Animation.BOUNCE
-		);
+		// 当前 marker 弹跳动画
+		marker.setAnimation(google.maps.Animation.BOUNCE);
+		lastActiveMarker = marker;
 
-		lastClickedMarker = marker;
+		// 地图居中
+		mapInstance.panTo(marker.getPosition());
 
-		map.panTo(marker.getPosition());
+		// 显示弹窗
+		createCustomPopup(marker);
 
-		createPopup(marker);
-
-		handleMarkerSelection(marker);
+		// 回传选中车辆
+		notifyVehicleSelected(marker);
 	});
 }
 
-// ====================== 创建 popup
-// ======================
-
-function createPopup(marker) {
-
-	const dom = document.createElement('div');
-
-	dom.style.cssText = `
-		position:absolute;
-		background:#fff;
-		border-radius:8px;
-		padding:10px 12px;
-		width:240px;
-		min-height:60px;
-		transform:translate(-50%, -130%);
-		box-shadow:0 2px 10px rgba(0,0,0,0.2);
-		font-size:14px;
-		line-height:1.5;
-		pointer-events:auto;
-	`;
-
-	dom.innerHTML = `
-
-		<div
-			style="
-				display:flex;
-				justify-content:space-between;
-				align-items:center;
-				margin-bottom:4px;
-			"
-		>
-
-			<div style="font-weight:bold;">
-				${marker.title}
-			</div>
-
-			<div
-				id="closeBtn"
-				style="
-					cursor:pointer;
-					color:#666;
-					font-size:16px;
-					padding:0 4px;
-				"
-			>
-				✕
-			</div>
-
-		</div>
-
-		<div
-			style="
-				color:#333;
-				margin-bottom:4px;
-			"
-		>
-			${marker.address}
-		</div>
-
-		<div style="color:#888;">
-
-			${buttonTexts[lang]?.AuthTime}
-
-			:
-
-			${marker.startDate}
-
-			—
-
-			${marker.endDate}
-
-		</div>
-	`;
-
-	// ======================
-	// popup关闭按钮
-	// ======================
-
-	dom.querySelector('#closeBtn').onclick = (e) => {
-
-		e.stopPropagation();
-
-		closeCustomPopup();
-
-		if (lastClickedMarker) {
-
-			lastClickedMarker.setAnimation(null);
-		}
-	};
-
-	// ======================
-	// 小箭头
-	// ======================
-
-	const arrow = document.createElement('div');
-
-	arrow.style.cssText = `
-		position:absolute;
-		bottom:-8px;
-		left:50%;
-		transform:translateX(-50%);
-		width:0;
-		height:0;
-		border-left:8px solid transparent;
-		border-right:8px solid transparent;
-		border-top:8px solid #fff;
-	`;
-
-	dom.appendChild(arrow);
-
-	// ======================
-	// Google Overlay
-	// ======================
-
-	currentCustomPopup =
-		new google.maps.OverlayView();
-
-	currentCustomPopup.onAdd = function() {
-
-		this.getPanes()
-			.floatPane
-			.appendChild(dom);
-	};
-
-	currentCustomPopup.draw = function() {
-
-		const point =
-			this.getProjection()
-				.fromLatLngToDivPixel(
-					marker.getPosition()
-				);
-
-		dom.style.left = point.x + 'px';
-
-		dom.style.top = point.y + 'px';
-	};
-
-	currentCustomPopup.onRemove = function() {
-
-		dom.remove();
-	};
-
-	currentCustomPopup.setMap(map);
-}
-
-// ====================== 关闭 popup
-// ======================
-
-function closeCustomPopup() {
-
-	if (currentCustomPopup) {
-
-		currentCustomPopup.setMap(null);
-
-		currentCustomPopup = null;
-	}
-}
-
-// ====================== marker 选中回传
-// ======================
-
-function handleMarkerSelection(marker) {
-
+/**
+ * 向 APP 通知选中车辆
+ */
+function notifyVehicleSelected(marker) {
 	uni.postMessage({
-
 		data: {
-
 			type: 'sn',
-
 			sn: marker.sn,
-
 			plateNumber: marker.plateNumber
 		}
 	});
 }
 
-// ====================== 清除 markers
-// ======================
+// ====================== 自定义弹窗 ======================
+/**
+ * 创建自定义弹窗
+ */
+function createCustomPopup(marker) {
+	const popupContainer = document.createElement('div');
+	popupContainer.style.cssText = `
+    position: absolute;
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px 12px;
+    width: 240px;
+    min-height: 60px;
+    transform: translate(-50%, -130%);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    font-size: 14px;
+    line-height: 1.5;
+    pointer-events: auto;
+  `;
 
-function clearMarkers() {
+	popupContainer.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+      <div style="font-weight: bold;">${marker.title}</div>
+      <div id="closePopupBtn" style="cursor: pointer; color: #666; font-size: 16px; padding: 0 4px;">✕</div>
+    </div>
+    <div style="color: #333; margin-bottom: 4px;">${marker.address}</div>
+    <div style="color: #888;">
+      ${localeTexts[currentLang]?.AuthTime}: ${marker.startDate} — ${marker.endDate}
+    </div>
+  `;
 
-	markers.forEach(m => m.setMap(null));
+	// 关闭按钮
+	popupContainer.querySelector('#closePopupBtn').onclick = (e) => {
+		e.stopPropagation();
+		closeCustomPopup();
+		if (lastActiveMarker) lastActiveMarker.setAnimation(null);
+	};
 
-	markers = [];
+	// 底部小箭头
+	const arrow = document.createElement('div');
+	arrow.style.cssText = `
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #fff;
+  `;
+	popupContainer.appendChild(arrow);
 
-	closeCustomPopup();
+	// 谷歌地图覆盖物
+	activeCustomPopup = new google.maps.OverlayView();
+	activeCustomPopup.onAdd = function() {
+		this.getPanes().floatPane.appendChild(popupContainer);
+	};
+	activeCustomPopup.draw = function() {
+		const point = this.getProjection().fromLatLngToDivPixel(marker.getPosition());
+		popupContainer.style.left = point.x + 'px';
+		popupContainer.style.top = point.y + 'px';
+	};
+	activeCustomPopup.onRemove = function() {
+		popupContainer.remove();
+	};
+
+	activeCustomPopup.setMap(mapInstance);
 }
 
-// ====================== 按钮事件
-// ======================
+/**
+ * 关闭自定义弹窗
+ */
+function closeCustomPopup() {
+	if (activeCustomPopup) {
+		activeCustomPopup.setMap(null);
+		activeCustomPopup = null;
+	}
+}
 
-document
-	.getElementById('btn1')
-	.addEventListener('click', () => {
-
+// ====================== 页面按钮事件 ======================
+/**
+ * 绑定底部功能按钮事件
+ */
+function bindPageButtonEvents() {
+	// 关锁
+	document.getElementById('btn1').addEventListener('click', () => {
 		uni.postMessage({
-
 			data: {
-
 				source: 1
 			}
 		});
 	});
 
-document
-	.getElementById('btn3')
-	.addEventListener('click', () => {
-
+	// 开锁
+	document.getElementById('btn3').addEventListener('click', () => {
 		uni.postMessage({
-
 			data: {
-
 				source: 3,
-
-				payload: info
+				payload: vehicleList
 			}
 		});
 	});
 
-document
-	.getElementById('btn5')
-	.addEventListener('click', () => {
-
+	// 寻车
+	document.getElementById('btn5').addEventListener('click', () => {
 		uni.postMessage({
-
 			data: {
-
 				source: 5,
-
-				payload: info
+				payload: vehicleList
 			}
 		});
 	});
-
-// ====================== 蓝牙/WIFI
-// ======================
-
-const wifi =
-	document.getElementById('wifi');
-
-const bluetooth =
-	document.getElementById('bluetooth');
-
-wifi.classList.add('active');
-
-function toggle(act) {
-
-	wifi.classList.remove('active');
-
-	bluetooth.classList.remove('active');
-
-	act.classList.add('active');
 }
 
-wifi.addEventListener('click', () => {
+// ====================== WIFI / 蓝牙 切换 ======================
+/**
+ * 初始化网络模式切换
+ */
+function initNetworkModeToggle() {
+	const wifiBtn = document.getElementById('wifi');
+	const bluetoothBtn = document.getElementById('bluetooth');
 
-	toggle(wifi);
+	// 默认选中 WIFI
+	wifiBtn.classList.add('active');
 
-	uni.postMessage({
+	// 切换激活状态
+	function setActiveMode(activeElement) {
+		wifiBtn.classList.remove('active');
+		bluetoothBtn.classList.remove('active');
+		activeElement.classList.add('active');
+	}
 
-		data: {
-
-			source: 'wifi'
-		}
+	// WIFI
+	wifiBtn.addEventListener('click', () => {
+		setActiveMode(wifiBtn);
+		uni.postMessage({
+			data: {
+				source: 'wifi'
+			}
+		});
 	});
-});
 
-bluetooth.addEventListener('click', () => {
-
-	toggle(bluetooth);
-
-	uni.postMessage({
-
-		data: {
-
-			source: 'bluetooth'
-		}
+	// 蓝牙
+	bluetoothBtn.addEventListener('click', () => {
+		setActiveMode(bluetoothBtn);
+		uni.postMessage({
+			data: {
+				source: 'bluetooth'
+			}
+		});
 	});
-});
+}
 
-// ====================== 导出
-// ======================
+// ====================== 初始化执行 ======================
+bindPageButtonEvents();
+initNetworkModeToggle();
 
-window.initMap = initMap;  
+// 导出地图初始化方法
+window.initMap = initMap;
