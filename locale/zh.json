@@ -1,0 +1,9 @@
+{
+    "ios.location.always": "用于获取你的位置并显示到车辆的距离",
+    "ios.location.wheninuse": "用于获取你的位置并显示到车辆的距离",
+    "ios.photo.library": "用于选择和上传照片",
+    "ios.photo.add": "用于保存照片到相册",
+    "ios.camera": "用于拍摄照片和上传图片",
+    "ios.bluetooth.peripheral": "用于通过蓝牙连接并与车辆通讯",
+    "ios.bluetooth.always": "用于通过蓝牙连接并与车辆通讯"
+}

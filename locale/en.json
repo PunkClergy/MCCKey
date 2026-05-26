@@ -1,0 +1,9 @@
+{
+    "ios.location.always": "Used to obtain your location and display the distance to your vehicle.",
+    "ios.location.wheninuse": "Used to obtain your location and display the distance to your vehicle.",
+    "ios.photo.library": "Used to select and upload photos.",
+    "ios.photo.add": "Used to save photos to your album.",
+    "ios.camera": "Used to take photos and upload images.",
+    "ios.bluetooth.peripheral": "Used to connect and communicate with your vehicle via Bluetooth.",
+    "ios.bluetooth.always": "Used to connect and communicate with your vehicle via Bluetooth."
+}

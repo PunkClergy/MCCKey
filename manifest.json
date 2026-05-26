@@ -65,14 +65,14 @@
                     }
                 },
                 "privacyDescription" : {
-                    "NSLocationAlwaysAndWhenInUseUsageDescription" : "Used to obtain your location and display the distance to your vehicle.",
-                    "NSLocationAlwaysUsageDescription" : "Used to obtain your location and display the distance to your vehicle.",
-                    "NSLocationWhenInUseUsageDescription" : "Used to obtain your location and display the distance to your vehicle.",
-                    "NSPhotoLibraryUsageDescription" : "Used to select and upload photos.",
-                    "NSPhotoLibraryAddUsageDescription" : "Used to save photos to your album.",
-                    "NSCameraUsageDescription" : "Used to take photos and upload images.",
-                    "NSBluetoothPeripheralUsageDescription" : "Used to connect and communicate with your vehicle via Bluetooth.",
-                    "NSBluetoothAlwaysUsageDescription" : "Used to connect and communicate with your vehicle via Bluetooth."
+                    "NSLocationAlwaysAndWhenInUseUsageDescription" : "%ios.location.always%",
+                    "NSLocationAlwaysUsageDescription" : "%ios.location.always%",
+                    "NSLocationWhenInUseUsageDescription" : "%ios.location.wheninuse%",
+                    "NSPhotoLibraryUsageDescription" : "%ios.photo.library%",
+                    "NSPhotoLibraryAddUsageDescription" : "%ios.photo.add%",
+                    "NSCameraUsageDescription" : "%ios.camera%",
+                    "NSBluetoothPeripheralUsageDescription" : "%ios.bluetooth.peripheral%",
+                    "NSBluetoothAlwaysUsageDescription" : "%ios.bluetooth.always%"
                 },
                 "idfa" : false
             },
