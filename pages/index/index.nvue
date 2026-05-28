@@ -362,6 +362,18 @@
 					1: this.controlCar,
 					3: this.controlCar,
 					5: this.controlCar,
+					'btnReturn': () => {
+						uni.showToast({
+							title: '还车成功',
+							icon: 'none'
+						})
+					},
+					'btnSee': () => {
+						uni.showToast({
+							title: '暂无照片',
+							icon: 'none'
+						})
+					},
 					default: this.handleNetworkBluetoothSwitching,
 				};
 				const handler = sourceHandlerMap[source] || sourceHandlerMap.default;

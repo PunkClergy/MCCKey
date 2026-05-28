@@ -36,7 +36,7 @@ const localeTexts = {
 		btn3Lang: '开锁',
 		btn1Lang: '关锁',
 		btn5Lang: '寻车',
-		btnSeeLang: '送车拍照',
+		btnSeeLang: '查看照片',
 		btn8Lang: '风控拦截',
 		btn6Lang: '取消拦截',
 		AuthTime: '授权时间'
@@ -391,6 +391,24 @@ function bindPageButtonEvents() {
 		uni.postMessage({
 			data: {
 				source: 5,
+				payload: vehicleList
+			}
+		});
+	});
+	// 还车
+	document.getElementById('btnReturn').addEventListener('click', () => {
+		uni.postMessage({
+			data: {
+				source: 'btnReturn',
+				payload: vehicleList
+			}
+		});
+	});
+	// 查看照片
+	document.getElementById('btnSee').addEventListener('click', () => {
+		uni.postMessage({
+			data: {
+				source: 'btnSee',
 				payload: vehicleList
 			}
 		});
