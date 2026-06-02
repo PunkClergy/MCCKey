@@ -526,23 +526,27 @@
 			 */
 			async InitgetCurrentLocation(options = {}) {
 				const getLoc = async () => {
+					// 提前定义 loc，失败时为 null
+					let loc = null;
+
 					try {
-						const loc = await new Promise((resolve, reject) => {
+						loc = await new Promise((resolve, reject) => {
 							uni.getLocation({
 								type: 'gcj02',
 								success: resolve,
 								fail: reject
 							});
 						});
-						await this.InitSharingCode(options, loc);
-						return loc;
 					} catch (err) {
 						const errMsg = err.errMsg?.includes('auth') ?
 							'位置权限已拒绝，请前往设置开启' :
 							'获取位置失败';
 						this.$showToast(errMsg);
-						throw err;
 					}
+
+					// ✅ 核心：无论成功失败，一定会执行
+					await this.InitSharingCode(options, loc);
+					return loc;
 				};
 
 				try {
@@ -590,6 +594,8 @@
 										}
 									});
 								});
+								// 这里也执行，保证安卓没权限也能跑业务
+								await getLoc();
 								return;
 							}
 						}
@@ -599,9 +605,10 @@
 					}
 				} catch (error) {
 					console.error('获取位置失败:', error);
+					// 最外层捕获异常后，依然保证执行
+					await getLoc();
 				}
 			},
-
 			/**
 			 * 获取控车码并设置缓存
 			 * @param {Object} evt 页面参数
@@ -800,7 +807,7 @@
 					this.$showToast('无可用车辆');
 					return;
 				}
-	
+
 				// 安全的loading管理
 				const loading = {
 					showed: false,
@@ -856,7 +863,7 @@
 					u_operation({
 							operationType: type,
 							sn: this.sn,
-							code:this.shareCode
+							code: this.shareCode
 						})
 						.then(res => {
 							loading.hide();
@@ -1023,9 +1030,28 @@
 							resolve(res);
 						},
 						fail: (err) => {
-							const errMsg = `定位失败：${err.errMsg}`;
-							this.$showToast(errMsg);
-							reject(new Error(errMsg));
+							console.log('定位错误：', err);
+							const msg = err.errMsg || '';
+							let showMsg = '获取位置失败';
+
+							// 权限被拒绝
+							if (msg.includes('auth deny') || msg.includes('auth denied') || msg
+								.includes('unauthorized')) {
+								showMsg = '位置权限已拒绝，请前往设置开启';
+							}
+							// 定位服务/GPS开关关闭（包含你遇到的 NOCELL&WIFI 错误）
+							else if (msg.includes('disabled') || msg.includes('LOCATIONS') || msg
+								.includes('NOCELL&WIFI')) {
+								showMsg = '请开启手机定位服务（GPS）';
+							}
+							// 定位超时
+							else if (msg.includes('timeout')) {
+								showMsg = '定位超时，请移动到开阔区域重试';
+							}
+
+							// 显示友好提示
+							this.$showToast(showMsg);
+							reject(new Error(showMsg));
 						}
 					});
 				});
