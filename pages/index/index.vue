@@ -189,6 +189,7 @@
 		},
 		onShow() {
 			try {
+				this.getCurrentLocation()
 				this.initLoginState();
 				this.InitDetermineEquipment();
 				if (this.options) {
@@ -206,22 +207,25 @@
 			// 进入之后首先定位位置
 			initPageData() {
 				const carData = uni.getStorageSync('carData')
-				this.markers = [{
-					id: 1,
-					latitude: carData?.latitude,
-					longitude: carData?.longitude,
-					title: carData?.plateNumber,
-					iconPath: '/static/images/car_icon.png',
-					width: 20,
-					height: 43,
-					callout: {
-						content: `${carData?.plateNumber || ''}\n当前位置：${carData?.address || '未知'}\n定位时间：${carData?.showtime || '未知'}\n授权时间:${carData?.startDate}至${carData?.endDate}`,
-						display: 'ALWAYS',
-						padding: 8
-					}
-				}]
-				this.latitude = carData?.latitude
-				this.longitude = carData?.longitude
+				if (carData) {
+					this.markers = [{
+						id: 1,
+						latitude: carData?.latitude,
+						longitude: carData?.longitude,
+						title: carData?.plateNumber,
+						iconPath: '/static/images/car_icon.png',
+						width: 20,
+						height: 43,
+						callout: {
+							content: `${carData?.plateNumber || ''}\n当前位置：${carData?.address || '未知'}\n定位时间：${carData?.showtime || '未知'}\n授权时间:${carData?.startDate}至${carData?.endDate}`,
+							display: 'ALWAYS',
+							padding: 8
+						}
+					}]
+					this.latitude = carData?.latitude
+					this.longitude = carData?.longitude
+				}
+
 			},
 			// ==================== 实时保存临时状态到缓存 ====================
 			saveTempDataToCache() {
@@ -503,6 +507,28 @@
 				});
 			},
 
+			// 获取当前位置,应对无车时使用
+			/**
+			 * 获取当前定位
+			 */
+			async getCurrentLocation() {
+				try {
+					const res = await uni.getLocation({
+						type: 'gcj02', // 国测局坐标，地图组件通用（推荐）
+						altitude: false
+					})
+					console.log('当前位置经纬度：', res.latitude, res.longitude)
+					// 赋值给页面变量
+					this.latitude = res.latitude
+					this.longitude = res.longitude
+				} catch (err) {
+					console.error('获取定位失败：', err)
+					uni.showToast({
+						title: '定位失败，请开启定位权限',
+						icon: 'none'
+					})
+				}
+			},
 			/**
 			 * 获取当前位置（兼容多平台）
 			 * @param {Object} options 页面参数
@@ -526,7 +552,6 @@
 							'获取位置失败';
 						this.$showToast(errMsg);
 					}
-
 					// ✅ 核心：无论成功失败，一定会执行
 					await this.InitSharingCode(options, loc);
 					return loc;
@@ -699,10 +724,15 @@
 
 				requestApi
 					.then(res => {
-						if (res?.code !== 1000) {
-							this.$showToast(res?.msg, 'none', 1500);
+						const {
+							code = 0, msg = ''
+						} = res ?? {}
+						if (code !== 1000) {
+							this.$showToast(msg, 'none', 1500)
+							code === 4000 && ['carData', 'carTempData', 'scene'].forEach(uni.removeStorageSync)
+							this.markers = []
 							return
-						};
+						}
 
 						const carData = res.content || {};
 						// 开始把数据存入缓存
