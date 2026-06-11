@@ -178,12 +178,11 @@
 		},
 		async onLoad(options) {
 			try {
+				this.initPageData()
 				this.deviceInfo = deviceDetector.getDeviceInfo();
 				// await this.InitgetCurrent();
 				this.options = options
 
-				// 进入页面立即检查网络
-				// this.checkNetworkImmediately();
 			} catch (error) {
 				console.error('页面初始化失败:', error);
 			}
@@ -195,8 +194,6 @@
 				if (this.options) {
 					this.InitgetCurrentLocation(this.options);
 				}
-				// 启动实时网络监听
-				// this.startNetworkListener();
 			} catch (error) {
 				console.error('页面显示失败:', error);
 			}
@@ -206,6 +203,26 @@
 			this.stopNetworkListener();
 		},
 		methods: {
+			// 进入之后首先定位位置
+			initPageData() {
+				const carData = uni.getStorageSync('carData')
+				this.markers = [{
+					id: 1,
+					latitude: carData?.latitude,
+					longitude: carData?.longitude,
+					title: carData?.plateNumber,
+					iconPath: '/static/images/car_icon.png',
+					width: 20,
+					height: 43,
+					callout: {
+						content: `${carData?.plateNumber || ''}\n当前位置：${carData?.address || '未知'}\n定位时间：${carData?.showtime || '未知'}\n授权时间:${carData?.startDate}至${carData?.endDate}`,
+						display: 'ALWAYS',
+						padding: 8
+					}
+				}]
+				this.latitude = carData?.latitude
+				this.longitude = carData?.longitude
+			},
 			// ==================== 实时保存临时状态到缓存 ====================
 			saveTempDataToCache() {
 				const tempData = {
@@ -218,41 +235,7 @@
 				uni.setStorageSync('carTempData', tempData);
 			},
 
-			// ==================== 核心：进入立即检查网络 ====================
-			async checkNetworkImmediately() {
-				try {
-					const res = await uni.getNetworkStatus();
-					this.networkConnected = res.isConnected || res.networkType !== 'none';
 
-					// 没网 + 没跳过 → 跳紧急页，不可返回
-					if (!this.networkConnected && !this.hasJumpedEmergency) {
-						this.hasJumpedEmergency = true;
-						uni.redirectTo({
-							url: '/pages/meet/index/index'
-						});
-					}
-				} catch (e) {
-					console.error('网络检测失败', e);
-				}
-			},
-
-			// ==================== 实时网络检测 ====================
-			startNetworkListener() {
-				uni.onNetworkStatusChange(res => {
-					this.networkConnected = res.isConnected;
-					if (!res.isConnected && !this.hasJumpedEmergency) {
-						// 没网 + 没跳过 → 跳转，不可返回
-						this.hasJumpedEmergency = true;
-						uni.redirectTo({
-							url: '/pages/meet/index/index'
-						});
-					} else if (res.isConnected) {
-						// 网络恢复，重置标记
-						this.hasJumpedEmergency = false;
-						this.$showToast('网络已恢复', 'none', 2000);
-					}
-				});
-			},
 			stopNetworkListener() {
 				uni.offNetworkStatusChange();
 			},
@@ -722,6 +705,8 @@
 						};
 
 						const carData = res.content || {};
+						// 开始把数据存入缓存
+						uni.setStorageSync('carData', carData);
 						this.rentCompany = carData.rentCompany || {};
 
 						// 解构赋值简化代码
@@ -880,7 +865,7 @@
 						})
 						.catch(err => {
 							loading.hide();
-							this.$showToast(err.message || '网络请求异常');
+							this.$showToast(err.message || '网络请求异常，请切换蓝牙模式');
 						});
 				} else {
 					loading.hide();
