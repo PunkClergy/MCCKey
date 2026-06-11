@@ -804,6 +804,7 @@
 			 */
 			handleFooterBtn(type) {
 				const networkBlue = uni.getStorageSync('carTempData')
+				const scene = uni.getStorageSync('scene')
 				if (!this.shareCode && !networkBlue?.idc) {
 					this.$showToast('无可用车辆');
 					return;
@@ -864,7 +865,7 @@
 					u_operation({
 							operationType: type,
 							sn: this.sn,
-							code: this.shareCode
+							code: this.shareCode || scene
 						})
 						.then(res => {
 							loading.hide();
