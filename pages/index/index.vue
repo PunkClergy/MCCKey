@@ -183,7 +183,7 @@
 				this.options = options
 
 				// 进入页面立即检查网络
-				this.checkNetworkImmediately();
+				// this.checkNetworkImmediately();
 			} catch (error) {
 				console.error('页面初始化失败:', error);
 			}
@@ -196,7 +196,7 @@
 					this.InitgetCurrentLocation(this.options);
 				}
 				// 启动实时网络监听
-				this.startNetworkListener();
+				// this.startNetworkListener();
 			} catch (error) {
 				console.error('页面显示失败:', error);
 			}
@@ -803,7 +803,8 @@
 			 * @param {number} type 控制类型
 			 */
 			handleFooterBtn(type) {
-				if (!this.shareCode) {
+				const networkBlue = uni.getStorageSync('carTempData')
+				if (!this.shareCode && !networkBlue?.idc) {
 					this.$showToast('无可用车辆');
 					return;
 				}
@@ -837,7 +838,7 @@
 
 				loading.show();
 
-				if (!this.sn) {
+				if (!this.sn && !networkBlue?.idc) {
 					this.$showToast('未找到有效设备标识');
 					loading.hide();
 					return;
@@ -885,16 +886,18 @@
 				}
 			},
 
+
 			/**
 			 * 蓝牙控制车辆
 			 * @param {number} type 控制类型
 			 */
 			handleExecuteBluetooth(type) {
+				const networkBlue = uni.getStorageSync('carTempData')
 				// 指令映射表
 				const COMMAND_MAPPING = {
 					[BTN_TYPES.FIND_CAR]: 5,
-					[BTN_TYPES.LOCK]: (this.deviceType === 'F1' || this.deviceType === 'F0') ? 4 : 3,
-					[BTN_TYPES.UNLOCK]: this.deviceType === 'F1' ? 1 : 2
+					[BTN_TYPES.LOCK]: (networkBlue.deviceType === 'F1' || networkBlue.deviceType === 'F0') ? 4 : 3,
+					[BTN_TYPES.UNLOCK]: networkBlue.deviceType === 'F1' ? 1 : 2
 				};
 
 				// 蓝牙状态处理器
@@ -947,8 +950,8 @@
 					const command = COMMAND_MAPPING[type];
 					if (typeof command === 'undefined') return;
 
-					const deviceId = this.idc || `19${this.sn}`;
-					bleManager.sendData(deviceId, this.blueKey, command, bluetoothHandler, commandCallback);
+					const deviceId = networkBlue.idc || `19${networkBlue.sn}`;
+					bleManager.sendData(deviceId, networkBlue.blueKey, command, bluetoothHandler, commandCallback);
 				} catch (error) {
 					console.error('蓝牙指令发送失败:', error);
 					uni.hideLoading();
