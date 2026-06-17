@@ -97,41 +97,32 @@ function updatePageLocale() {
  * 初始化谷歌地图
  */
 function initMap() {
-	if (!navigator.geolocation) {
-		alert('当前设备不支持定位功能');
-		return;
-	}
+	// 为通过 Google Play 权限审核，H5 地图页不再主动请求用户定位。
+	// 地图默认居中到车辆位置；车辆数据未到达前使用一个中性默认中心点。
+	const firstVehicle = vehicleList.find(item => item?.latitude && item?.longitude);
+	const center = firstVehicle ? {
+		lat: Number(firstVehicle.latitude),
+		lng: Number(firstVehicle.longitude)
+	} : {
+		lat: 0,
+		lng: 0
+	};
 
-	navigator.geolocation.getCurrentPosition(
-		(position) => {
-			currentLat = position.coords.latitude;
-			currentLng = position.coords.longitude;
+	currentLat = center.lat;
+	currentLng = center.lng;
 
-			// 创建地图实例
-			mapInstance = new google.maps.Map(document.getElementById('map'), {
-				zoom: DEFAULT_ZOOM,
-				center: {
-					lat: currentLat,
-					lng: currentLng
-				}
-			});
+	mapInstance = new google.maps.Map(document.getElementById('map'), {
+		zoom: firstVehicle ? DEFAULT_ZOOM : 2,
+		center
+	});
 
-			renderUserLocationMarker();
-			isMapReady = true;
+	isMapReady = true;
 
-			// 已有车辆数据则直接渲染
-			if (vehicleList.length) renderVehicleMarkers();
+	if (vehicleList.length) renderVehicleMarkers();
 
-			// 点击地图空白处关闭弹窗
-			mapInstance.addListener('click', closeCustomPopup);
+	mapInstance.addListener('click', closeCustomPopup);
 
-			// 请求用户信息
-			requestUserInfoFromApp();
-		},
-		() => {
-			alert('定位失败，请开启定位权限');
-		}
-	);
+	requestUserInfoFromApp();
 }
 
 /**

@@ -13,6 +13,10 @@ export const u_wxLogin = (data) => http.postFormData('/userapi/zcyWxLogin', data
 export const u_login = (data) => http.postFormData('/userapi/zcyLogin', data)
 export const u_getControlCodeByMobile = (data) => http.get('/renterApi/getControlCodeByMobile', data)
 
+// 安装检测：根据 SN 和检验码获取设备/蓝牙钥匙信息
+// 如后端实际路径不同，请只调整这里的接口路径，页面侧无需修改。
+export const u_getBluetoothKey = (data) => http.postFormData('/k7Api/getBluetoothKey', data)
+
 
 
 

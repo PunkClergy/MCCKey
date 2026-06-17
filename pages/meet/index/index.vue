@@ -1,5 +1,6 @@
 <template>
 	<view class="container">
+		<view class="status-safe-bar" :style="{ height: statusBarHeight + 'px' }"></view>
 		<!-- 美化后的头部导航栏 -->
 		<view class="header">
 			<view class="header-container">
@@ -57,10 +58,13 @@
 				blueKey: '',
 				idc: '',
 				plateNumber: '',
-				hasJumped: false // 防止重复跳转
+				hasJumped: false, // 防止重复跳转
+				statusBarHeight: 0,
+				safeBottom: 0
 			}
 		},
 		onLoad(options) {
+			this.initSafeArea();
 			// 一进页面就开启实时网络监听
 			this.startNetworkListener();
 		},
@@ -76,6 +80,22 @@
 			uni.offNetworkStatusChange();
 		},
 		methods: {
+			initSafeArea() {
+				try {
+					const sys = uni.getSystemInfoSync();
+					this.statusBarHeight = sys.statusBarHeight || 0;
+					this.safeBottom = sys.safeAreaInsets && typeof sys.safeAreaInsets.bottom === 'number' ? sys.safeAreaInsets.bottom : 0;
+					// #ifdef APP-PLUS
+					if (typeof plus !== 'undefined') {
+						plus.navigator.setStatusBarStyle('dark');
+						plus.navigator.setStatusBarBackground('#ABD2FA');
+					}
+					// #endif
+				} catch (e) {
+					this.statusBarHeight = 0;
+					this.safeBottom = 0;
+				}
+			},
 			// ==================== 实时网络检测（核心） ====================
 			startNetworkListener() {
 				uni.onNetworkStatusChange(res => {
@@ -178,12 +198,18 @@
 	}
 
 	.container {
-		height: 90vh;
+		min-height: 100vh;
 		background: linear-gradient(to bottom, #abd2fa, #ffffff);
 		padding: 20rpx;
-		padding-top: 40rpx;
+		padding-top: 0;
 		display: flex;
 		flex-direction: column;
+	}
+
+	.status-safe-bar {
+		width: 100%;
+		background: #abd2fa;
+		flex-shrink: 0;
 	}
 
 	.vehicle-card {
@@ -266,8 +292,8 @@
 
 	/* ========== 美化头部导航栏 核心样式 ========== */
 	.header {
-		/* 适配手机状态栏 */
-		padding-top: var(--status-bar-height);
+		/* 状态栏由 status-safe-bar 统一占位 */
+		padding-top: 0;
 		/* background: linear-gradient(135deg, #4f9fff, #3b8aff); */
 		height: 88rpx;
 		display: flex;

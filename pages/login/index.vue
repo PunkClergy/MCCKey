@@ -1,5 +1,6 @@
 <template>
 	<view class="container">
+		<view class="status-safe-bar" :style="{ height: statusBarHeight + 'px' }"></view>
 		<!-- 登录区域 -->
 		<view class="login-area">
 			<view class="logo-container fade-in">
@@ -74,9 +75,12 @@
 				c_link: 'https://k1sw.wiselink.net.cn/',
 				logoSrc: '/assets/images/logo.png',
 				hardware: true, //是否为小程序
+				statusBarHeight: 0,
+				safeBottom: 0,
 			};
 		},
 		onLoad(options) {
+			this.initSafeArea();
 			// 隐私授权检查
 			uni.requirePrivacyAuthorize({
 				success: () => {},
@@ -95,6 +99,22 @@
 			})
 		},
 		methods: {
+			initSafeArea() {
+				try {
+					const sys = uni.getSystemInfoSync();
+					this.statusBarHeight = sys.statusBarHeight || 0;
+					this.safeBottom = sys.safeAreaInsets && typeof sys.safeAreaInsets.bottom === 'number' ? sys.safeAreaInsets.bottom : 0;
+					// #ifdef APP-PLUS
+					if (typeof plus !== 'undefined') {
+						plus.navigator.setStatusBarStyle('light');
+						plus.navigator.setStatusBarBackground('#252C3B');
+					}
+					// #endif
+				} catch (e) {
+					this.statusBarHeight = 0;
+					this.safeBottom = 0;
+				}
+			},
 			/************************ 基础通用方法 ************************/
 			// 判断当前设备参数
 			InitDetermineEquipment() {
@@ -327,8 +347,14 @@
 	.container {
 		display: flex;
 		flex-direction: column;
-		height: 100vh;
+		min-height: 100vh;
 		background-color: #252c3b;
+	}
+
+	.status-safe-bar {
+		width: 100%;
+		background-color: #252c3b;
+		flex-shrink: 0;
 	}
 
 	/* 登录区域 */

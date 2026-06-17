@@ -8,6 +8,23 @@ const defaultConfig = {
 	loading: true
 }
 
+// 将对象参数转换为 query string，避免依赖 url-search-params-polyfill
+function buildQueryString(params = {}) {
+	return Object.keys(params)
+		.filter(key => params[key] !== undefined && params[key] !== null)
+		.map(key => {
+			const value = params[key]
+			if (Array.isArray(value)) {
+				return value
+					.map(item => `${encodeURIComponent(key)}=${encodeURIComponent(item)}`)
+					.join('&')
+			}
+			return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+		})
+		.filter(Boolean)
+		.join('&')
+}
+
 class Http {
 	constructor(config) {
 		this.baseURL = config.baseURL
@@ -35,8 +52,10 @@ class Http {
 		// 处理URL
 		let url = this.baseURL + mergedConfig.url
 		if (mergedConfig.params) {
-			const params = new URLSearchParams(mergedConfig.params).toString()
-			url += `?${params}`
+			const params = buildQueryString(mergedConfig.params)
+			if (params) {
+				url += `?${params}`
+			}
 		}
 
 		// 显示加载中

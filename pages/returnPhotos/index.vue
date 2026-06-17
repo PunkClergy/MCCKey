@@ -1,6 +1,7 @@
 <template>
-  <view>
+  <view class="page-root">
     <image class="bg-img" src="/static/images/background.jpg"></image>
+    <view class="status-safe-bar" :style="{ height: statusBarHeight + 'px' }"></view>
 
     <view class="container">
       <view class="page_title">点击上传照片</view>
@@ -84,6 +85,7 @@
 
       <button 
         class="submit_btn" 
+        :style="{ bottom: (safeBottom + 10) + 'px' }"
         hover-class="btn_tapcolor" 
         @tap="submitBtnTap"
       >
@@ -113,16 +115,26 @@ export default {
       code: '',
       showType: 0,
       currentViewType: 0,
-      currentCardType: 0
+      currentCardType: 0,
+      statusBarHeight: 0,
+      safeBottom: 0
     };
   },
   onReady() {
     // 获取系统信息
     uni.getSystemInfo({
       success: (res) => {
+        this.statusBarHeight = res.statusBarHeight || 0;
+        this.safeBottom = res.safeAreaInsets && typeof res.safeAreaInsets.bottom === 'number' ? res.safeAreaInsets.bottom : 0;
+        // #ifdef APP-PLUS
+        if (typeof plus !== 'undefined') {
+          plus.navigator.setStatusBarStyle('light');
+          plus.navigator.setStatusBarBackground('#000000');
+        }
+        // #endif
         this.showPhoneHeight = res.windowHeight;
         this.showPhoneWidth = res.windowWidth;
-        this.showHeight = res.windowHeight - res.windowWidth / 750 * (70 + 130);
+        this.showHeight = res.windowHeight - this.statusBarHeight - this.safeBottom - res.windowWidth / 750 * (70 + 150);
         this.cardWidth = res.windowWidth - res.windowWidth / 750 * (750 - 80);
       }
     });
@@ -392,6 +404,20 @@ page {
   height: 100%;
   width: 100%;
   position: fixed;
+}
+
+.page-root {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.status-safe-bar {
+  width: 100%;
+  background-color: black;
+  position: relative;
+  z-index: 1;
 }
 
 .container {

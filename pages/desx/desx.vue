@@ -1,5 +1,6 @@
 <template>
 	<view class="page-container">
+		<view class="status-safe-bar" :style="{ height: statusBarHeight + 'px' }"></view>
 
 		<!-- 全屏弹窗（默认显示） -->
 		<view class="modal-mask" v-if="showModal">
@@ -23,6 +24,8 @@
 			return {
 				lang: 'zhCn',
 				showModal: true,
+				statusBarHeight: 0,
+				safeBottom: 0,
 				// 标题双语
 				modalTitle: {
 					zhCn: '离线蓝牙控车功能使用须知',
@@ -56,9 +59,26 @@ This function relies on mobile system settings, APP cache and storage permission
 			};
 		},
 		onShow() {
+			this.initSafeArea()
 			this.getSystemLanguage()
 		},
 		methods: {
+			initSafeArea() {
+				try {
+					const sys = uni.getSystemInfoSync();
+					this.statusBarHeight = sys.statusBarHeight || 0;
+					this.safeBottom = sys.safeAreaInsets && typeof sys.safeAreaInsets.bottom === 'number' ? sys.safeAreaInsets.bottom : 0;
+					// #ifdef APP-PLUS
+					if (typeof plus !== 'undefined') {
+						plus.navigator.setStatusBarStyle('dark');
+						plus.navigator.setStatusBarBackground('#F5F5F5');
+					}
+					// #endif
+				} catch (e) {
+					this.statusBarHeight = 0;
+					this.safeBottom = 0;
+				}
+			},
 			goToIndex() {
 				uni.redirectTo({
 					url: "/pages/index/index"
@@ -111,7 +131,13 @@ This function relies on mobile system settings, APP cache and storage permission
 		background: #f5f5f5;
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		justify-content: flex-start;
+	}
+
+	.status-safe-bar {
+		width: 100%;
+		background: #f5f5f5;
+		flex-shrink: 0;
 	}
 
 	.modal-mask {

@@ -1,62 +1,58 @@
 {
-	"pages": [{
-			"path": "pages/desx/desx",
-			"style": {
-				"navigationBarTitleText": ""
-			}
-		}, {
-			"path": "pages/index/index",
-			"style": {
-				"navigationBarTitleText": "智车钥",
-				"navigationBarBackgroundColor": "#EFF1FC"
-			}
-		},
-		{
-			"path": "pages/login/index",
-			"style": {
-				"navigationStyle": "default",
-				"navigationBarTitleText": "智车钥登录",
-				"navigationBarBackgroundColor": "#252C3B",
-				"navigationBarTextStyle": "white"
-			}
-		}, {
-			"path": "pages/userCenter/index",
-			"style": {
-				"navigationStyle": "default",
-				"navigationBarTitleText": "个人中心",
-				"navigationBarBackgroundColor": "#252C3B",
-				"navigationBarTextStyle": "white"
-			}
-		}, {
-			"path": "pages/returnPhotos/index",
-			"style": {
-				"navigationStyle": "default",
-				"navigationBarTitleText": "归还车辆",
-				"navigationBarBackgroundColor": "#252C3B",
-				"navigationBarTextStyle": "white"
-			}
-		},
-		{
-			"path": "pages/meet/index/index",
-			"style": {
-				"navigationBarTitleText": "应急开关锁"
-			}
-		}
-	],
-	"permission": {
-		"scope.userLocation": {
-			"desc": "你的位置信息将用于展示当前位置"
-		}
-	},
-	"requiredPrivateInfos": [
-		"getLocation"
-	],
-	"globalStyle": {
-		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "uni-app",
-		"navigationBarBackgroundColor": "#F8F8F8",
-		"backgroundColor": "#F8F8F8",
-		"navigationStyle": "custom"
-	},
-	"uniIdRouter": {}
+    "pages": [
+        {
+            "path": "pages/desx/desx",
+            "style": {
+                "navigationBarTitleText": ""
+            }
+        },
+        {
+            "path": "pages/index/index",
+            "style": {
+                "navigationBarTitleText": "智车钥",
+                "navigationBarBackgroundColor": "#EFF1FC"
+            }
+        },
+        {
+            "path": "pages/login/index",
+            "style": {
+                "navigationStyle": "default",
+                "navigationBarTitleText": "智车钥登录",
+                "navigationBarBackgroundColor": "#252C3B",
+                "navigationBarTextStyle": "white"
+            }
+        },
+        {
+            "path": "pages/userCenter/index",
+            "style": {
+                "navigationStyle": "default",
+                "navigationBarTitleText": "个人中心",
+                "navigationBarBackgroundColor": "#252C3B",
+                "navigationBarTextStyle": "white"
+            }
+        },
+        {
+            "path": "pages/returnPhotos/index",
+            "style": {
+                "navigationStyle": "default",
+                "navigationBarTitleText": "归还车辆",
+                "navigationBarBackgroundColor": "#252C3B",
+                "navigationBarTextStyle": "white"
+            }
+        },
+        {
+            "path": "pages/meet/index/index",
+            "style": {
+                "navigationBarTitleText": "应急开关锁"
+            }
+        }
+    ],
+    "globalStyle": {
+        "navigationBarTextStyle": "black",
+        "navigationBarTitleText": "uni-app",
+        "navigationBarBackgroundColor": "#F8F8F8",
+        "backgroundColor": "#F8F8F8",
+        "navigationStyle": "custom"
+    },
+    "uniIdRouter": {}
 }

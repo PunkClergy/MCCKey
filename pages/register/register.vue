@@ -1,6 +1,7 @@
 <!-- pages/register/register.vue -->
 <template>
 	<view class="container">
+		<view class="status-safe-bar" :style="{ height: statusBarHeight + 'px' }"></view>
 		<CustomNavBar title="注册账号" />
 		<view class="register-area">
 			<!-- Logo 区域 -->
@@ -58,15 +59,34 @@
 				smsBtnText: '',
 				countdown: 60,
 				langs: {},
+				statusBarHeight: 0,
+				safeBottom: 0,
 			};
 		},
 		components: {
 			CustomNavBar
 		},
 		onShow() {
+			this.initSafeArea()
 			this.handleGetCurrentLanguage()
 		},
 		methods: {
+			initSafeArea() {
+				try {
+					const sys = uni.getSystemInfoSync();
+					this.statusBarHeight = sys.statusBarHeight || 0;
+					this.safeBottom = sys.safeAreaInsets && typeof sys.safeAreaInsets.bottom === 'number' ? sys.safeAreaInsets.bottom : 0;
+					// #ifdef APP-PLUS
+					if (typeof plus !== 'undefined') {
+						plus.navigator.setStatusBarStyle('light');
+						plus.navigator.setStatusBarBackground('#252C3B');
+					}
+					// #endif
+				} catch (e) {
+					this.statusBarHeight = 0;
+					this.safeBottom = 0;
+				}
+			},
 			handleGetCurrentLanguage() {
 				let currentLang = uni.getStorageSync('lang') || 'zh-CN';
 				this.langs = langs[currentLang]
@@ -135,7 +155,14 @@
 	.container {
 		display: flex;
 		flex-direction: column;
-		height: 100vh;
+		min-height: 100vh;
+		background-color: #252c3b;
+	}
+
+	.status-safe-bar {
+		width: 100%;
+		background-color: #252c3b;
+		flex-shrink: 0;
 	}
 
 	.register-area {

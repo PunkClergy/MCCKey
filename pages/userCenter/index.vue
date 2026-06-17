@@ -38,7 +38,6 @@
 	import {
 		tips
 	} from '@/utils/langtips.js'
-	import 'url-search-params-polyfill';
 	export default {
 		name: 'UserCenter',
 		data() {
@@ -47,6 +46,7 @@
 				lang: 'zhCn',
 				// 基础配置
 				tabBarHeight: 80,
+				safeBottom: 0,
 				servicePhone: '+86 400-090-5050',
 				baseUrl: 'https://k1sw.wiselink.net.cn/',
 
@@ -98,9 +98,10 @@
 				};
 			},
 			contentStyle() {
+				const { statusBarHeight, navBarHeight } = this.headerConfig;
 				return {
-					top: '90px',
-					bottom: `${this.tabBarHeight}px`
+					top: `${statusBarHeight + navBarHeight + 12}px`,
+					bottom: `${this.safeBottom + 12}px`
 				};
 			}
 		},
@@ -177,6 +178,13 @@
 			// 获取系统信息（精简逻辑）
 			getSystemInfo() {
 				this.systemInfo = uni.getSystemInfoSync();
+				this.safeBottom = this.systemInfo.safeAreaInsets && typeof this.systemInfo.safeAreaInsets.bottom === 'number' ? this.systemInfo.safeAreaInsets.bottom : 0;
+				// #ifdef APP-PLUS
+				if (typeof plus !== 'undefined') {
+					plus.navigator.setStatusBarStyle('dark');
+					plus.navigator.setStatusBarBackground('#F3F9FD');
+				}
+				// #endif
 				const {
 					statusBarHeight,
 					screenWidth,
@@ -418,7 +426,7 @@
 	// 页面容器
 	.container {
 		width: 100%;
-		height: 100vh;
+		min-height: 100vh;
 		display: flex;
 		flex-direction: column;
 		background: #F3F9FD;
@@ -428,13 +436,15 @@
 
 	/* 自定义头部 */
 	.custom-header {
-		width: 96%;
+		width: 100%;
 		position: fixed;
 		top: 0;
 		z-index: 100;
 		display: flex;
 		align-items: center;
 		box-sizing: border-box;
+		background: #F3F9FD;
+		padding-right: 24rpx;
 	}
 
 	.custom-header-outer-layer {
