@@ -397,7 +397,7 @@
 						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_NO_RESPONSE]: '设备超时无响应'
 					};
 					if (msgMap[state]) {
-						console.log(2,'000000000000002')
+						console.log(2, '000000000000002')
 						uni.hideLoading();
 						uni.showModal({
 							title: this.tips.Tip[this.lang],
@@ -405,16 +405,22 @@
 							showCancel: false
 						});
 					} else if (bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_ERROR == state) {
-						console.log(1,'0000000000000001')
+						console.log(1, '0000000000000001')
 						uni.hideLoading();
 					}
 				}, function(data) {
-					console.log(3,'000000000000000')
+					console.log(3, '000000000000000')
 					uni.hideLoading();
-					uni.showToast({
-						title: this.tips.OperateSuccess[this.lang],
-						icon: 'none'
-					});
+					// uni.showToast({
+					// 	title: this.tips.OperateSuccess[this.lang],
+					// 	icon: 'none'
+					// });
+					uni.showModal({
+						title: '提示',
+						content: this.tips.OperateSuccess[this.lang],
+						confirmText: '确认',
+						showCancel: false,
+					})
 				});
 			},
 			/** 执行车辆控制指令 */
@@ -496,7 +502,7 @@
 		align-items: center;
 		background-color: #FFFFFF;
 		width: 100px;
-		height:38px;
+		height: 38px;
 		min-width: 80px;
 		min-height: 30px;
 		flex-shrink: 0;

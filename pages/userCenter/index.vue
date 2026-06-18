@@ -124,7 +124,7 @@
 						text: this.tips.ContactZhitongxin[this.lang]
 					},
 					{
-						icon: '/static/images/setup.png',
+						icon: '/static/images/SetUp.png',
 						handleEvent: 'language',
 						text: this.tips.LanguageSettings[this.lang]
 					},
