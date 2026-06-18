@@ -42,7 +42,7 @@ export const tips = {
 	},
 	// 联系智信通
 	"ContactZhitongxin": {
-		"zhCn": "联系智信通",
+		"zhCn": "联系商家",
 		"enUs": "Contact Us",
 		"jaJp": "ジートンシンに連絡"
 	},

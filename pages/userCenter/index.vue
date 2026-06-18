@@ -292,7 +292,7 @@
 			// 统一事件处理
 			handleItemClick(item) {
 				const actionMap = {
-					contactUs: () => this.callPhone(this.servicePhone),
+					contactUs: () => this.callPhone(this.mobile),
 					switchAccount: () => uni.navigateTo({
 						url: '/pages/login/index'
 					}),
