@@ -930,7 +930,10 @@
 							uni.hideLoading();
 							this.$showToast('请打开蓝牙');
 						},
-						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_NOT_FOUND]: uni.hideLoading,
+						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_NOT_FOUND]: () => {
+							uni.hideLoading();
+							this.$showToast('未搜索到设备');
+						},
 						[bleManager.DEFAULT_BLUETOOTH_STATE.BLUETOOTH_CONNECT_FAILED]: () => {
 							uni.hideLoading();
 							this.$showToast('蓝牙连接失败，请重试!');
