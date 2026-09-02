@@ -1,7 +1,7 @@
 export const tips = {
 	// 智车钥
 	'WiseLinkAutoRide': {
-		'zhCn': '智车钥',
+		'zhCn': 'WiseLink Auto Ride',
 		'enUs': 'WiseLink Auto Ride'
 	},
 	// 个人中心

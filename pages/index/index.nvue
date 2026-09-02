@@ -115,32 +115,34 @@
 		methods: {
 			// 设置当前语言
 			langSet() {
-				// 1. 先拿缓存，有缓存一律用缓存（安卓/iOS 通用）
-				const cacheLang = uni.getStorageSync('language')
-				if (cacheLang) {
-					this.lang = cacheLang
-					return
+				const allowLangList = ['zhCn', 'enUs'];
+				const cached = uni.getStorageSync('language');
+
+				// 校验缓存语言
+				if (cached) {
+					this.lang = allowLangList.includes(cached) ? cached : 'enUs';
+					// 缓存非法则同步更新存储
+					if (!allowLangList.includes(cached)) uni.setStorageSync('language', this.lang);
+					return;
 				}
 
-				// 2. 没有缓存 → 分平台处理
-				const systemInfo = uni.getSystemInfoSync()
-				const platform = systemInfo.platform // 平台：ios / android
+				let targetLang = 'enUs';
+				try {
+					const {
+						platform,
+						language
+					} = uni.getSystemInfoSync();
+					if (platform !== 'ios' && language) {
+						const [prefix, suffix] = language.split(/[-_]/);
+						if (prefix && suffix) {
+							const processedSuffix = suffix[0].toUpperCase() + suffix.slice(1).toLowerCase();
+							targetLang = prefix.toLowerCase() + processedSuffix;
+						}
+					}
+				} catch (e) {}
 
-				if (platform === 'ios') {
-					// ==================== iOS 逻辑 ====================
-					// 无缓存 → 直接强制设置为 zhCn
-					this.lang = 'zhCn'
-					uni.setStorageSync('language', 'zhCn')
-				} else {
-					// ==================== 安卓 逻辑（你原来的代码） ====================
-					const language = systemInfo.language
-					const [prefix, suffix] = language.split(/[-_]/)
-					const processedSuffix = suffix.charAt(0).toUpperCase() + suffix.slice(1).toLowerCase()
-					const lang = prefix.toLowerCase() + processedSuffix
-
-					this.lang = lang
-					uni.setStorageSync('language', lang)
-				}
+				this.lang = allowLangList.includes(targetLang) ? targetLang : 'enUs';
+				uni.setStorageSync('language', this.lang);
 			},
 			/** 跳转登录/个人中心 */
 			goToUserPage() {
@@ -363,17 +365,45 @@
 					3: this.controlCar,
 					5: this.controlCar,
 					'btnReturn': () => {
-						uni.showToast({
-							title: '还车成功',
-							icon: 'none'
+						uni.navigateTo({
+							url: `/pages/returnPhotos/index?code=${this.controlcode}`
 						})
 					},
 					'btnSee': () => {
-						uni.showToast({
-							title: '暂无照片',
-							icon: 'none'
+						console.log(this.vehicleDataList, '000--')
+						const item = this.vehicleDataList?.[0]
+						if (!item) {
+							uni.showToast({
+								title: '暂无车辆',
+								icon: 'none'
+							})
+							return
+						}
+						const baseImgUrl = 'https://k3a.wiselink.net.cn/img/'
+						// 拼接完整网络地址，过滤空值
+						const imgList = [
+								item.uploadImgUrl,
+								item.uploadImgUrlTwo,
+								item.uploadImgUrlThree,
+								item.uploadImgUrlFour,
+								item.uploadImgUrlFive
+							].filter(path => !!path)
+							.map(path => baseImgUrl + path) // 拼接域名
+
+						if (imgList.length === 0) {
+							uni.showToast({
+								title: '暂无照片',
+								icon: 'none'
+							})
+							return
+						}
+
+						uni.previewImage({
+							urls: imgList,
+							current: 0
 						})
 					},
+
 					default: this.handleNetworkBluetoothSwitching,
 				};
 				const handler = sourceHandlerMap[source] || sourceHandlerMap.default;
