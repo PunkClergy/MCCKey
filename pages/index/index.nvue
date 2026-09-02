@@ -365,12 +365,20 @@
 					3: this.controlCar,
 					5: this.controlCar,
 					'btnReturn': () => {
+						const item = this.vehicleDataList?.[0]
+						if (!item) {
+							uni.showToast({
+								title: '暂无车辆',
+								icon: 'none'
+							})
+							return
+						}
 						uni.navigateTo({
 							url: `/pages/returnPhotos/index?code=${this.controlcode}`
 						})
 					},
 					'btnSee': () => {
-						console.log(this.vehicleDataList, '000--')
+
 						const item = this.vehicleDataList?.[0]
 						if (!item) {
 							uni.showToast({
@@ -455,6 +463,14 @@
 			},
 			/** 执行车辆控制指令 */
 			async controlCar(controlType) {
+				console.log(this.vehicleInfo?.sn, '09876')
+				if (!this?.vehicleInfo?.sn) {
+					uni.showToast({
+						title: '暂无车辆',
+						icon: 'none'
+					})
+					return
+				}
 				const strategy = {
 					bluetooth: () => {
 						const cmd = bleManager.DEFAULT_CMD_TYPE;
