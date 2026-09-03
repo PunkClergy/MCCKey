@@ -4,7 +4,14 @@
 		<view class="custom-header" :style="{ paddingTop: statusBarHeight + 'px' }">
 			<view class="header-wrapper">
 				<view class="header-left">
-					<text class="header-title">{{tips.WiseLinkAutoRide[lang]}}</text>
+					<view style="background: #edf4ff;border-radius: 10rpx;">
+						<image src="/static/images/logo.png" style="width: 80rpx;height: 80rpx;" />
+					</view>
+					<view style="margin-left: 10rpx;">
+						<text class="header-title">{{tips.WiseLinkAutoRide[lang]}}</text>
+						<text class="header-title-content">Fleet Digital Key</text>
+					</view>
+
 				</view>
 				<view class="header-right">
 					<text class="header-action-btn" @click="goToUserPage">
@@ -510,12 +517,14 @@
 <style scoped>
 	.container {
 		width: 750rpx;
-		 min-height: 100vh; /* 加上这句 */
+		min-height: 100vh;
+		/* 加上这句 */
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		background-size: cover;
 	}
+
 	.custom-header {
 		width: 750rpx;
 		height: 100px;
@@ -526,6 +535,7 @@
 		justify-content: center;
 		align-items: center;
 	}
+
 	.header-wrapper {
 		width: 700rpx;
 		display: flex;
@@ -533,10 +543,13 @@
 		justify-content: space-between;
 		align-items: flex-end;
 	}
+
 	.header-left {
 		display: flex;
 		align-items: center;
+		flex-direction: row;
 	}
+
 	.header-right {
 		border-radius: 25px;
 		border: 1rpx solid #f1f1f1;
@@ -550,17 +563,26 @@
 		min-height: 30px;
 		flex-shrink: 0;
 	}
+
 	.header-title {
 		color: #333;
 		font-weight: 600;
-		font-size: 20px;
+		font-size: 18px;
 	}
+
+	.header-title-content {
+		font-size: 14px;
+		font-weight: 200;
+		color: #333;
+	}
+
 	.header-action-btn {
 		color: #333;
 		font-size: 14px;
 		min-width: 80px;
 		text-align: center;
 	}
+
 	.web-view-wrapper {
 		width: 750rpx;
 	}
