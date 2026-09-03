@@ -1,56 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=0">
-	<link href="http://fonts.googleapis.com/css?family=Roboto:300" rel="stylesheet">
-	<title>谷歌地图-初始化地图</title>
-	<link rel="stylesheet" href="./css/index.css">
-</head>
-<body>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport"
+			content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=0">
+		<link href="http://fonts.googleapis.com/css?family=Roboto:300" rel="stylesheet">
+		<title>谷歌地图-初始化地图</title>
+		<link rel="stylesheet" href="./css/index.css">
+	</head>
+	<body>
 
-	<div class="img-container">
-		<div class="img-item" id="wifi">
-			<img src="http://k1sw.wiselink.net.cn/img/app2.0/desk/wifi.png" alt="WiFi">
-			<img src="http://k1sw.wiselink.net.cn/img/app2.0/desk/wifi_1.png" alt="WiFi">
+		<div class="img-container">
+			<div class="img-item" id="wifi">
+				<img src="http://k1sw.wiselink.net.cn/img/app2.0/desk/wifi.png" alt="WiFi">
+				<img src="http://k1sw.wiselink.net.cn/img/app2.0/desk/wifi_1.png" alt="WiFi">
+			</div>
+			<div class="img-item" id="bluetooth">
+				<img src="http://k1sw.wiselink.net.cn/img/app2.0/desk/bluetooth.png" alt="蓝牙">
+				<img src="http://k1sw.wiselink.net.cn/img/app2.0/desk/bluetooth_1.png" alt="蓝牙">
+			</div>
 		</div>
-		<div class="img-item" id="bluetooth">
-			<img src="http://k1sw.wiselink.net.cn/img/app2.0/desk/bluetooth.png" alt="蓝牙">
-			<img src="http://k1sw.wiselink.net.cn/img/app2.0/desk/bluetooth_1.png" alt="蓝牙">
-		</div>
-	</div>
 
-	<!-- 整体卡片：地图 + 底部按钮层 -->
-	<div class="card-wrapper">
-		<div id="map-wrap">
-			<div id="map"></div>
-		</div>
-		<div class="floatingLayer">
-			<div class="button_style" id="btnReturn">
-				<img src="https://k3a.wiselink.net.cn/img/app/desk/ren_return.png" alt="">
-				<div id="btnReturnLang">归还车辆</div>
+		<!-- 整体卡片：地图 + 底部按钮层 -->
+		<div class="card-wrapper">
+			<div id="map-wrap">
+				<div id="map"></div>
 			</div>
-			<div class="button_style" id="btn3">
-				<img src="https://k3a.wiselink.net.cn/img/app/desk/ren_unlock.png" alt="">
-				<div id="btn3Lang">开锁</div>
-			</div>
-			<div class="button_style" id="btn1">
-				<img src="https://k3a.wiselink.net.cn/img/app/desk/ren_lock.png" alt="">
-				<div id="btn1Lang">关锁</div>
-			</div>
-			<div class="button_style" id="btn5">
-				<img src="https://k3a.wiselink.net.cn/img/app/desk/ren_lookFor.png" alt="">
-				<div id="btn5Lang">寻车</div>
-			</div>
-			<div class="button_style" id="btnSee">
-				<img src="https://k3a.wiselink.net.cn/img/app/desk/ren_photo.png" alt="">
-				<div id="btnSeeLang">查看照片</div>
-			</div>
-		</div>
-	</div>
+			<div class="floatingLayer">
+				<div class="photo-item" id="btnSee">
+					<div class="photo-left">
+						<img class="photo-icon" src="https://k1sw.wiselink.net.cn/img/app3.0/ride/ren_photo.png"
+							alt="photo icon" />
+						<div class="photo-text"><span id="btnSeeLang">Vehicle Status</span> | <span id="total">5 Photos</span> </div>
+					</div>
+					<div class="photo-right">
+						<img src="https://k1sw.wiselink.net.cn/img/app3.0/ride/ren_right.png" alt="arrow"
+							style="width: 15px;height: 15px;" />
+					</div>
+				</div>
+				<div class="container-row">
+					<!-- 第一个图标区块 -->
+					<div class="icon-block" id="btn5">
+						<div class="icon-circle">
+							<img src="https://k1sw.wiselink.net.cn/img/app3.0/ride/ren_lookFor.png" class="icon-img"
+								alt="图标" />
+						</div>
+						<div class="icon-text" id="btn5Lang">Honk & Flash</div>
+					</div>
 
-	<script src="https://js.cdn.aliyun.dcloud.net.cn/dev/uni-app/uni.webview.1.5.2.js"></script>
-	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGzLnrbvfiqdmemX8yR4CTc6n2SzjOaBM&libraries=places&callback=initMap" async defer></script>
-	<script src="./js/sendKey.js"></script>
-</body>
+					<div class="icon-block" id="btn3">
+						<div class="icon-circle">
+							<img src="https://k1sw.wiselink.net.cn/img/app3.0/ride/ren_unlock.png" class="icon-img"
+								alt="图标" />
+						</div>
+						<div class="icon-text" id="btn3Lang">Unlock</div>
+					</div>
+					<div class="icon-block" id="btn1">
+						<div class="icon-circle">
+							<img src="https://k1sw.wiselink.net.cn/img/app3.0/ride/ren_lock.png" class="icon-img"
+								alt="图标" />
+						</div>
+						<div class="icon-text" id="btn1Lang">Lock</div>
+					</div>
+				</div>
+				<div class="return-btn" id="btnReturn">
+					<img class="return-icon" src="https://k1sw.wiselink.net.cn/img/app3.0/ride/ren_return.png"
+						alt="return vehicle" />
+					<div class="return-text" id="btnReturnLang">Return Vehicle</div>
+				</div>
+			</div>
+		</div>
+
+		<script src="https://js.cdn.aliyun.dcloud.net.cn/dev/uni-app/uni.webview.1.5.2.js"></script>
+		<script
+			src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGzLnrbvfiqdmemX8yR4CTc6n2SzjOaBM&libraries=places&callback=initMap"
+			async defer></script>
+		<script src="./js/sendKey.js"></script>
+	</body>
 </html>

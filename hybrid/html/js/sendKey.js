@@ -22,24 +22,26 @@ let activeCustomPopup = null;
 // ====================== 多语言配置 ======================
 const localeTexts = {
 	enUs: {
-		btnReturnLang: 'Return',
+		btnReturnLang: 'Return Vehicle',
 		btn3Lang: 'Unlock',
 		btn1Lang: 'Lock',
-		btn5Lang: 'Locate',
-		btnSeeLang: 'Photos',
+		btn5Lang: 'Honk & Flash',
+		btnSeeLang: 'View photos',
 		btn8Lang: 'Block',
 		btn6Lang: 'Unblock',
-		AuthTime: 'Auth Time'
+		AuthTime: 'Auth Time',
+		total: 'Total: 5 Photos'
 	},
 	zhCn: {
 		btnReturnLang: '归还车辆',
 		btn3Lang: '开锁',
 		btn1Lang: '关锁',
-		btn5Lang: '寻车',
+		btn5Lang: '鸣笛闪烁',
 		btnSeeLang: '查看照片',
 		btn8Lang: '风控拦截',
 		btn6Lang: '取消拦截',
-		AuthTime: '授权时间'
+		AuthTime: '授权时间',
+		total: '共 5 张'
 	}
 };
 

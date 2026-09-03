@@ -510,12 +510,12 @@
 <style scoped>
 	.container {
 		width: 750rpx;
+		 min-height: 100vh; /* 加上这句 */
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		background-size: cover;
 	}
-
 	.custom-header {
 		width: 750rpx;
 		height: 100px;
@@ -526,7 +526,6 @@
 		justify-content: center;
 		align-items: center;
 	}
-
 	.header-wrapper {
 		width: 700rpx;
 		display: flex;
@@ -534,12 +533,10 @@
 		justify-content: space-between;
 		align-items: flex-end;
 	}
-
 	.header-left {
 		display: flex;
 		align-items: center;
 	}
-
 	.header-right {
 		border-radius: 25px;
 		border: 1rpx solid #f1f1f1;
@@ -553,20 +550,17 @@
 		min-height: 30px;
 		flex-shrink: 0;
 	}
-
 	.header-title {
 		color: #333;
 		font-weight: 600;
 		font-size: 20px;
 	}
-
 	.header-action-btn {
 		color: #333;
 		font-size: 14px;
 		min-width: 80px;
 		text-align: center;
 	}
-
 	.web-view-wrapper {
 		width: 750rpx;
 	}
