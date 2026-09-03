@@ -15,9 +15,27 @@ body {
 	height: 100%;
 	overflow: hidden;
 	position: relative;
+	display: flex;
+	flex-direction: column;
+}
+
+/* 整体卡片外壳 */
+.card-wrapper {
+	width: 98%;
+	margin: 2vh auto 0 auto;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* 地图容器 */
+#map-wrap {
+	flex: 7;
+	border-radius: 16px 16px 0 0;
+	overflow: hidden;
+	width: 100%;
+}
 #map {
 	width: 100%;
 	height: 100%;
@@ -31,7 +49,7 @@ body {
 	display: none !important;
 }
 
-/* WiFi / 蓝牙 按钮容器 */
+/* ===== WiFi / 蓝牙 切换按钮容器 ===== */
 .img-container {
 	position: fixed;
 	top: 30px;
@@ -45,7 +63,6 @@ body {
 	background: #fff;
 	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
-
 .img-item {
 	width: 40px;
 	height: 40px;
@@ -58,55 +75,43 @@ body {
 	border-radius: 8px;
 	transition: border-color 0.2s, background 0.2s;
 }
-
 /* 激活样式 */
 .img-item.active {
 	border-color: #1677ff;
 	background: #e6f7ff;
 }
-
 /* 图片统一大小 */
 .img-item img {
 	width: 25px;
 	height: 25px;
 	object-fit: contain;
 }
-
-/* 状态切换 */
+/* 状态切换：默认显示第一张，激活显示第二张 */
 .img-item img:nth-child(1) {
 	display: block;
 }
-
 .img-item img:nth-child(2) {
 	display: none;
 }
-
 .img-item.active img:nth-child(1) {
 	display: none;
 }
-
 .img-item.active img:nth-child(2) {
 	display: block;
 }
 
-/* 底部功能按钮悬浮层 */
+/* ===== 底部功能按钮层 ===== */
 .floatingLayer {
-	width: 96%;
+	flex: 3;
+	width: 100%;
 	display: flex;
-	position: absolute;
-	bottom: 20px;
-	left: 50%;
-	transform: translateX(-50%);
-	justify-content: space-around;
-	gap: 10px;
-	padding: 10px;
+	flex-direction: row;
+	background: #1677ff;
+	border-radius: 0 0 16px 16px;
 	box-sizing: border-box;
-	z-index: 101;
-	background: #fff;
-	border-radius: 10px;
 }
-
 .button_style {
+	flex: 1;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
@@ -115,8 +120,8 @@ body {
 	padding: 4px;
 	border-radius: 6px;
 	font-size: 12px;
+	color: #fff;
 }
-
 #btnReturn img,
 #btn3 img,
 #btn1 img,
@@ -127,11 +132,11 @@ body {
 	width: 33px;
 	height: 27px;
 }
-
 .button_style:active {
 	transform: translateY(0);
 }
 
+/* ===== 轨迹按钮 ===== */
 .trajectoryLayer {
 	position: absolute;
 	bottom: 150px;

@@ -8,7 +8,7 @@
 	<link rel="stylesheet" href="./css/index.css">
 </head>
 <body>
-	<div id="map"></div>
+
 	<div class="img-container">
 		<div class="img-item" id="wifi">
 			<img src="http://k1sw.wiselink.net.cn/img/app2.0/desk/wifi.png" alt="WiFi">
@@ -19,26 +19,33 @@
 			<img src="http://k1sw.wiselink.net.cn/img/app2.0/desk/bluetooth_1.png" alt="蓝牙">
 		</div>
 	</div>
-	<div class="floatingLayer">
-		<div class="button_style" id="btnReturn">
-			<img src="https://k3a.wiselink.net.cn/img/app/desk/ren_return.png" alt="">
-			<div id="btnReturnLang">归还车辆</div>
+
+	<!-- 整体卡片：地图 + 底部按钮层 -->
+	<div class="card-wrapper">
+		<div id="map-wrap">
+			<div id="map"></div>
 		</div>
-		<div class="button_style" id="btn3">
-			<img src="https://k3a.wiselink.net.cn/img/app/desk/ren_unlock.png" alt="">
-			<div id="btn3Lang">开锁</div>
-		</div>
-		<div class="button_style" id="btn1">
-			<img src="https://k3a.wiselink.net.cn/img/app/desk/ren_lock.png" alt="">
-			<div id="btn1Lang">关锁</div>
-		</div>
-		<div class="button_style" id="btn5">
-			<img src="https://k3a.wiselink.net.cn/img/app/desk/ren_lookFor.png" alt="">
-			<div id="btn5Lang">寻车</div>
-		</div>
-		<div class="button_style" id="btnSee">
-			<img src="https://k3a.wiselink.net.cn/img/app/desk/ren_photo.png" alt="">
-			<div id="btnSeeLang">查看照片</div>
+		<div class="floatingLayer">
+			<div class="button_style" id="btnReturn">
+				<img src="https://k3a.wiselink.net.cn/img/app/desk/ren_return.png" alt="">
+				<div id="btnReturnLang">归还车辆</div>
+			</div>
+			<div class="button_style" id="btn3">
+				<img src="https://k3a.wiselink.net.cn/img/app/desk/ren_unlock.png" alt="">
+				<div id="btn3Lang">开锁</div>
+			</div>
+			<div class="button_style" id="btn1">
+				<img src="https://k3a.wiselink.net.cn/img/app/desk/ren_lock.png" alt="">
+				<div id="btn1Lang">关锁</div>
+			</div>
+			<div class="button_style" id="btn5">
+				<img src="https://k3a.wiselink.net.cn/img/app/desk/ren_lookFor.png" alt="">
+				<div id="btn5Lang">寻车</div>
+			</div>
+			<div class="button_style" id="btnSee">
+				<img src="https://k3a.wiselink.net.cn/img/app/desk/ren_photo.png" alt="">
+				<div id="btnSeeLang">查看照片</div>
+			</div>
 		</div>
 	</div>
 

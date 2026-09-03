@@ -49,7 +49,7 @@
 		android: 44,
 		default: 44
 	}
-	const HEADER_TOTAL_HEIGHT = 80
+	const HEADER_TOTAL_HEIGHT = 100
 
 	export default {
 		data() {

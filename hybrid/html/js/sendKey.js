@@ -112,7 +112,7 @@ function initMap() {
 	currentLng = center.lng;
 
 	mapInstance = new google.maps.Map(document.getElementById('map'), {
-		zoom: firstVehicle ? DEFAULT_ZOOM : 2,
+		zoom: firstVehicle ? DEFAULT_ZOOM : 10,
 		center
 	});
 
