@@ -2,9 +2,9 @@
     "name" : "WiseLink Auto Ride",
     "appid" : "__UNI__0192300",
     "description" : "",
-    "versionName" : "1.0.6",
+    "versionName" : "1.1.1",
     "package" : "com2.example.myapp",
-    "versionCode" : 20260822,
+    "versionCode" : 20260904,
     "transformPx" : false,
     "locale" : "auto",
     "app-plus" : {
@@ -33,16 +33,6 @@
                     "<uses-permission android:name=\"android.permission.INTERNET\"/>",
                     "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",
                     "<uses-permission android:name=\"android.permission.CAMERA\"/>",
-                    "<uses-permission android:name=\"android.permission.BLUETOOTH\" android:maxSdkVersion=\"30\"/>",
-                    "<uses-permission android:name=\"android.permission.BLUETOOTH_ADMIN\" android:maxSdkVersion=\"30\"/>",
-                    "<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\" android:maxSdkVersion=\"30\"/>",
-                    "<uses-permission android:name=\"android.permission.BLUETOOTH_SCAN\" android:usesPermissionFlags=\"neverForLocation\"/>",
-                    "<uses-permission android:name=\"android.permission.BLUETOOTH_CONNECT\"/>",
-                    "<uses-feature android:name=\"android.hardware.camera\" android:required=\"false\"/>",
-                    "<uses-feature android:name=\"android.hardware.camera.autofocus\" android:required=\"false\"/>",
-                    "<uses-feature android:name=\"android.hardware.bluetooth_le\" android:required=\"false\"/>",
-                    "<uses-permission android:name=\"android.permission.READ MEDIA IMAGES\" />",
-                    "<uses-permission android:name=\"android.permission.READ MEDIA VIDEO\" />",
                     "<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\" />"
                 ]
             },

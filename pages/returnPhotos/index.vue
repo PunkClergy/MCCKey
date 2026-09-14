@@ -1,7 +1,7 @@
 <template>
   <view class="page-root">
     <image class="bg-img" src="/static/images/background.jpg"></image>
-    <view class="status-safe-bar" :style="{ height: statusBarHeight + 'px' }"></view>
+    <!-- <view class="status-safe-bar" :style="{ height: statusBarHeight + 'px' }"></view> -->
 
     <view class="container">
       <view class="page_title">点击上传照片</view>

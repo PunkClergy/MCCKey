@@ -497,12 +497,11 @@
 								code: this.controlcode,
 								_timestamp: Date.now()
 							});
-							console.log(122)
 							uni.hideLoading()
-							uni.showToast({
-								title: res.msg,
-								icon: 'none'
-							});
+							uni.showModal({
+								title: res?.msg,
+								showCancel: false
+							})
 						} catch (e) {
 							console.error('车辆控制失败：', e)
 						}
