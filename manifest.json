@@ -2,9 +2,9 @@
     "name" : "WiseLink Auto Ride",
     "appid" : "__UNI__0192300",
     "description" : "",
-    "versionName" : "1.1.1",
+    "versionName" : "1.1.2",
     "package" : "com2.example.myapp",
-    "versionCode" : 20260904,
+    "versionCode" : 20261030,
     "transformPx" : false,
     "locale" : "auto",
     "app-plus" : {
@@ -25,8 +25,8 @@
             "android" : {
                 "networkSecurityConfig" : true,
                 "abiFilters" : [ "arm64-v8a" ],
-                "targetSdkVersion" : 35,
-                "compileSdkVersion" : 35,
+                "targetSdkVersion" : 36,
+                "compileSdkVersion" : 36,
                 "minSdkVersion" : 24,
                 "package" : "com.example.myapp",
                 "permissions" : [
