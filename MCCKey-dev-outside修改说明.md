@@ -47,3 +47,33 @@ android:usesPermissionFlags="neverForLocation"
 - 移除 `pages/userCenter/index.vue` 中未必要的 `url-search-params-polyfill` 引入。
 - `utils/request/http.js` 改为内置 query 参数序列化函数，避免 HBuilderX 导出本地打包资源时因未安装 npm 包导致 Rollup 解析失败。
 - 清空未使用的 npm 依赖，导出本地资源不再依赖 node_modules。
+
+## 2026-11-13 修复 Google Play「照片/视频权限」拒审
+
+**问题**：Play 审核报「您的应用应使用系统照片选择器访问照片/视频，而不是请求 READ_MEDIA_IMAGES / READ_MEDIA_VIDEO」。
+
+**根因**：源码 `manifest.json` 里本来就没有这两个权限，是 HBuilderX 云打包时由 `Camera` 模块（targetSdkVersion ≥ 33）自动注入到最终 `AndroidManifest.xml` 的，所以只删 `permissions` 里的条目没用。
+
+**改动**（`manifest.json` → `app-plus.distribute.android`）：
+
+```json
+"permissions" : [
+    "...INTERNET...",
+    "...ACCESS_NETWORK_STATE...",
+    "...CAMERA...",
+    "<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\" android:maxSdkVersion=\"32\" />"
+],
+"removepermissions" : [
+    "android.permission.READ_MEDIA_IMAGES",
+    "android.permission.READ_MEDIA_VIDEO"
+]
+```
+
+- 用官方的「强制移除的权限」(`removepermissions`) 在最终合并阶段删掉 `Camera` 模块注入的两个媒体权限。
+- `READ_EXTERNAL_STORAGE` 加 `maxSdkVersion="32"`：Android 12 及以下走相册选图仍需它，Android 13+ 由系统照片选择器接管，符合 Play 政策。
+- 同时把 `versionCode` 由 `20261030` 升到 `20261113`、`versionName` 升到 `1.1.3`，避免 Google 复审时仍指向旧包。
+
+**功能影响**：`pages/returnPhotos/index.vue` 的 `uni.chooseImage({ sourceType: ['album', 'camera'] })`——拍照只依赖 `CAMERA`（保留）；相册选图在 Android 13+ 走系统照片选择器（免权限），Android ≤12 仍有 `READ_EXTERNAL_STORAGE`。上传走 `uni.uploadFile` 的临时文件路径，与存储权限无关。
+
+**验证方式**：重新云打包后，用 Android Studio 打开生成的 `.aab` / `.apk`，查看 `AndroidManifest.xml` 全局搜索 `READ_MEDIA`，应搜不到；再上传到 Play Console 的**所有轨道**（内部测试、封闭测试、正式版）重新送审。
+

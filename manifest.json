@@ -2,9 +2,9 @@
     "name" : "WiseLink Auto Ride",
     "appid" : "__UNI__0192300",
     "description" : "",
-    "versionName" : "1.1.2",
+    "versionName" : "1.1.3",
     "package" : "com2.example.myapp",
-    "versionCode" : 20261030,
+    "versionCode" : 20261113,
     "transformPx" : false,
     "locale" : "auto",
     "app-plus" : {
@@ -33,7 +33,11 @@
                     "<uses-permission android:name=\"android.permission.INTERNET\"/>",
                     "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",
                     "<uses-permission android:name=\"android.permission.CAMERA\"/>",
-                    "<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\" />"
+                    "<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\" android:maxSdkVersion=\"32\" />"
+                ],
+                "removepermissions" : [
+                    "android.permission.READ_MEDIA_IMAGES",
+                    "android.permission.READ_MEDIA_VIDEO"
                 ]
             },
             "ios" : {
