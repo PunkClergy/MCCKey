@@ -77,3 +77,54 @@ android:usesPermissionFlags="neverForLocation"
 
 **验证方式**：重新云打包后，用 Android Studio 打开生成的 `.aab` / `.apk`，查看 `AndroidManifest.xml` 全局搜索 `READ_MEDIA`，应搜不到；再上传到 Play Console 的**所有轨道**（内部测试、封闭测试、正式版）重新送审。
 
+---
+
+## 2026-11-16 复核：上一条的移除配置没生效，改为从 API 层根治
+
+**复核结论**（`python tools/check-aab.py` 解析 11-13 打出的包）：
+
+```
+versionName 1.1.3 / versionCode 20261113 / targetSdk 36
+[FAIL] 仍声明了媒体权限: READ_MEDIA_IMAGES, READ_MEDIA_VIDEO
+```
+
+`removepermissions` 确实被 HBuilderX 带进了编译配置（见 `unpackage/dist/build/app-plus/manifest.json`），但**最终 AAB 里这两个权限依然存在**。说明它们在 SDK/模块侧的清单里声明，应用层"删除"不生效。
+
+**真正的原因**：`uni.chooseImage` 在 App 端是直接读相册的实现，用它就会连带申请 `READ_MEDIA_*`，撞上 Play 的「照片和视频权限」政策。官方给出的两条路：改用 `uni.chooseMedia`（App 端走系统相册选择器，不需要本地媒体权限），或改用原生插件 `uni-chooseSystemMedia`。
+
+**改动一：`pages/returnPhotos/index.vue`**
+
+- `inputCardBtnTap` 改为调用新增的 `pickOneImage()`，交互不变（1 张、原图/压缩、相册+相机）。
+- `pickOneImage()` 用条件编译：
+  - App / 小程序：`uni.chooseMedia({ mediaType: ['image'], sourceType: ['album', 'camera'] })`，取 `res.tempFiles[0].tempFilePath`；
+  - H5：`uni.chooseMedia` 不支持，退回 `uni.chooseImage`（H5 无 Android 权限概念，不影响 Play 上架）。
+- 顺带修掉原 `fail` 回调里 `err.errMsg.includes('auth')` 在 `errMsg` 缺失时会抛异常的问题；用户主动取消不再提示"失败"。
+
+**改动二：`manifest.json`** 增加官方可视化界面「强制移除的权限」对应的 `excludePermissions`（完整 `<uses-permission/>` 字符串），与 `removepermissions` 并存做双保险。
+
+**改动三：新增 `tools/check-aab.py`** —— 上传前自检，直接解析 AAB 内的 protobuf 清单，输出 `versionCode / targetSdkVersion / 是否含 READ_MEDIA` 并给结论：
+
+```
+python tools/check-aab.py            # 自动检查 unpackage/release 下最新的 aab
+python tools/check-aab.py <路径>      # 检查指定 aab/apk
+```
+
+---
+
+## 2026-11-16 targetSdk 36 复核（Play「目标 API 级别」报错）
+
+Play 提示「不合规的最高目标 API 级别为 Android 15（API 35）」，但本地产物均已是 36：
+
+| 打包时间 | versionCode | targetSdk | READ_MEDIA |
+|---|---|---|---|
+| 08-21 16:33 | 20260821 | 35 | YES |
+| 09-04 15:42 | 20260904 | 35 | YES |
+| 09-16 18:46 | 20260916 | 35 | no |
+| 09-17 | 20260917 | 35 | no |
+| 10-30 15:06 | 20261030 | **36** | YES |
+| 11-13 18:29 | 20261113 | **36** | YES |
+
+- git 记录显示 `targetSdkVersion` 是 **10-30 才从 35 改成 36** 的，之前所有包都是 35。
+- 因此该报错指向的是**仍挂在某个轨道（内部测试/封闭测试/正式版）里的旧版本包**（1.0.x ~ 1.1.3，8 月至 9 月那批，targetSdk 35），而不是新包没配好。
+- 处理：把 `20261113` 发布到**正式版**，并把各测试轨道里的旧版本停用/替换（Play 会扫描所有轨道，包括测试轨道）。
+- 后续每次发版都先跑 `python tools/check-aab.py` 再上传。

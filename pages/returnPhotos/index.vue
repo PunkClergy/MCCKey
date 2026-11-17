@@ -204,49 +204,86 @@ export default {
      */
     inputCardBtnTap(e) {
       const viewType = e.currentTarget.id;
-      
-      // 原生选择图片/拍照
-      uni.chooseImage({
-        count: 1, // 仅选择1张
-        sizeType: ['original', 'compressed'], // 原图/压缩图
-        sourceType: ['album', 'camera'], // 相册/相机
-        success: (res) => {
-          const tempFilePath = res.tempFilePaths[0];
-          
-          // 根据按钮ID更新对应图片路径
-          switch(viewType) {
-            case '1':
-              this.firstTempFilePaths = [tempFilePath];
-              break;
-            case '2':
-              this.secondTempFilePaths = [tempFilePath];
-              break;
-            case '3':
-              this.thirdTempFilePaths = [tempFilePath];
-              break;
-            case '4':
-              this.fourthTempFilePaths = [tempFilePath];
-              break;
-            case '5':
-              this.fifthTempFilePaths = [tempFilePath];
-              break;
-          }
-          
-          this.showToast('图片选择成功！');
-        },
-        fail: (err) => {
-          console.error('选择图片失败:', err);
-          if (err.errMsg.includes('auth')) {
-            this.showModal('请授权相机/相册权限后重试', true, (confirm) => {
-              if (confirm) {
-                uni.openSetting();
-              }
-            });
-          } else {
-            this.showToast('图片选择失败，请重试');
-          }
+
+      this.pickOneImage().then((tempFilePath) => {
+        if (!tempFilePath) {
+          this.showToast('图片选择失败，请重试');
+          return;
+        }
+
+        // 根据按钮ID更新对应图片路径
+        switch(viewType) {
+          case '1':
+            this.firstTempFilePaths = [tempFilePath];
+            break;
+          case '2':
+            this.secondTempFilePaths = [tempFilePath];
+            break;
+          case '3':
+            this.thirdTempFilePaths = [tempFilePath];
+            break;
+          case '4':
+            this.fourthTempFilePaths = [tempFilePath];
+            break;
+          case '5':
+            this.fifthTempFilePaths = [tempFilePath];
+            break;
+        }
+
+        this.showToast('图片选择成功！');
+      }).catch((err) => {
+        console.error('选择图片失败:', err);
+        const errMsg = (err && (err.errMsg || err.message)) || '';
+        if (errMsg.indexOf('cancel') > -1) {
+          return; // 用户主动取消，不提示
+        }
+        if (errMsg.indexOf('auth') > -1) {
+          this.showModal('请授权相机/相册权限后重试', true, (confirm) => {
+            if (confirm) {
+              uni.openSetting();
+            }
+          });
+        } else {
+          this.showToast('图片选择失败，请重试');
         }
       });
+    },
+
+    /**
+     * 选择单张图片（返回临时文件路径）
+     * App/小程序：使用 uni.chooseMedia，走系统相册选择器，不会申请 READ_MEDIA_IMAGES / READ_MEDIA_VIDEO，
+     *             满足 Google Play「照片和视频权限」政策。
+     * H5：chooseMedia 不支持，退回 chooseImage（H5 无 Android 权限概念，不影响上架）。
+     */
+    pickOneImage() {
+      // #ifdef H5
+      return new Promise((resolve, reject) => {
+        uni.chooseImage({
+          count: 1,
+          sizeType: ['original', 'compressed'],
+          sourceType: ['album', 'camera'],
+          success: (res) => resolve(res.tempFilePaths && res.tempFilePaths[0]),
+          fail: reject
+        });
+      });
+      // #endif
+
+      // #ifndef H5
+      return new Promise((resolve, reject) => {
+        uni.chooseMedia({
+          count: 1,
+          mediaType: ['image'],
+          sizeType: ['original', 'compressed'],
+          sourceType: ['album', 'camera'],
+          camera: 'back',
+          success: (res) => {
+            const file = (res.tempFiles && res.tempFiles[0]) || {};
+            resolve(file.tempFilePath || (res.tempFilePaths && res.tempFilePaths[0]));
+          },
+          fail: reject
+        });
+      });
+      // #endif
     },
 
     /**
